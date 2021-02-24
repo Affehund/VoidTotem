@@ -6,5 +6,4 @@ Craft a Totem of Void Undying, put it in your main/-offhand and you will be tele
 
 
 ## This mod provides you with:
-A totem that prevents you from dying in the void
-A config to change some settings (see below)
+A totem that prevents you from dying in the void and a config to change some settings (see below)
