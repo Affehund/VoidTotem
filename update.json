@@ -1,11 +1,11 @@
 {
-  "homepage" : "https://www.curseforge.com/minecraft/mc-mods/voidtotem",
-  "1.16.5" : {
-    "voidtotem-1.16.5-1.0.0" : "Initial release",
-	"voidtotem-1.16.5-1.1.0" : "Additions:\n- curios compatibility (a slot for the totem)\n- visible effects for all players around the player who was saved with the totem\nTweaks and code improvements"
-  },
-  "promos" : {
-    "1.16.5-latest" : "voidtotem-1.16.5-1.1.0",
-    "1.16.5-recommended" : "voidtotem-1.16.5-1.1.0"
-  }
+	"homepage" : "https://www.curseforge.com/minecraft/mc-mods/voidtotem",
+  	"1.16.5" : {
+    		"voidtotem-1.16.5-1.0.0" : "Initial release",
+		"voidtotem-1.16.5-1.1.0" : "Additions:\n- curios compatibility (a slot for the totem)\n- visible effects for all players around the player who was saved with the totem\nTweaks and code improvements"
+  	},
+  	"promos" : {
+    		"1.16.5-latest" : "voidtotem-1.16.5-1.1.0",
+    		"1.16.5-recommended" : "voidtotem-1.16.5-1.1.0"
+  	}
 }
