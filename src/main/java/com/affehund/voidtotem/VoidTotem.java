@@ -4,12 +4,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.affehund.voidtotem.core.ModDataGeneration;
+import com.affehund.voidtotem.core.ModUtils;
 import com.affehund.voidtotem.core.VoidTotemConfig;
 import com.affehund.voidtotem.core.network.PacketHandler;
 import com.affehund.voidtotem.core.network.TotemEffectPacket;
 
 import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
+import net.minecraft.data.BlockTagsProvider;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -31,6 +33,7 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.TickEvent.PlayerTickEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
@@ -38,15 +41,19 @@ import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig.Type;
 import net.minecraftforge.fml.event.lifecycle.GatherDataEvent;
+import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
+import top.theillusivec4.curios.api.SlotTypeMessage;
+import top.theillusivec4.curios.api.SlotTypePreset;
 
 /**
  * @author Affehund
@@ -67,6 +74,7 @@ public class VoidTotem {
 		LOGGER.debug("Loading up " + ModConstants.MOD_NAME + "!");
 
 		modEventBus.addListener(this::gatherData);
+		modEventBus.addListener(this::enqueueIMC);
 		ITEMS.register(modEventBus);
 
 		forgeEventBus.register(this);
@@ -85,16 +93,29 @@ public class VoidTotem {
 	public static final RegistryObject<Item> VOID_TOTEM_ITEM = ITEMS.register(ModConstants.VOID_TOTEM_STRING,
 			() -> new Item(new Item.Properties().maxStackSize(1).group(ItemGroup.COMBAT).rarity(Rarity.UNCOMMON)));
 
+	private void enqueueIMC(final InterModEnqueueEvent event) {
+		if (ModUtils.isModLoaded(ModConstants.CURIOS_MOD_ID)) {
+			InterModComms.sendTo(ModConstants.CURIOS_MOD_ID, SlotTypeMessage.REGISTER_TYPE,
+					() -> SlotTypePreset.CHARM.getMessageBuilder().build());
+			VoidTotem.LOGGER.info("Enqueued IMC to {}", ModConstants.CURIOS_MOD_ID);
+		}
+	}
+
 	private void gatherData(final GatherDataEvent event) {
 		DataGenerator generator = event.getGenerator();
+		ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
 		if (event.includeServer()) {
 			generator.addProvider(new ModDataGeneration.RecipeGen(generator));
+			BlockTagsProvider blockTagsProvider = new ModDataGeneration.BlockTagsGen(generator, ModConstants.MOD_ID,
+					existingFileHelper);
+			generator.addProvider(new ModDataGeneration.ItemTagsGen(generator, blockTagsProvider, ModConstants.MOD_ID,
+					existingFileHelper));
 		}
 		if (event.includeClient()) {
 			generator.addProvider(new ModDataGeneration.LanguageGen(generator, ModConstants.MOD_ID, "de_de"));
 			generator.addProvider(new ModDataGeneration.LanguageGen(generator, ModConstants.MOD_ID, "en_us"));
 			generator.addProvider(
-					new ModDataGeneration.ItemModelGen(generator, ModConstants.MOD_ID, event.getExistingFileHelper()));
+					new ModDataGeneration.ItemModelGen(generator, ModConstants.MOD_ID, existingFileHelper));
 		}
 	}
 
@@ -112,11 +133,14 @@ public class VoidTotem {
 		if (event.side == LogicalSide.SERVER && event.phase == TickEvent.Phase.START) {
 			final BlockPos playerPos = event.player.getPosition();
 			if (event.player.getPersistentData().getBoolean(ModConstants.NBT_TAG)) {
-				((ServerPlayerEntity) event.player).connection.floatingTickCount = 0;
-				if (event.player.isInWater() || event.player.abilities.isFlying || event.player.abilities.allowFlying
-						|| event.player.world.getBlockState(playerPos).getBlock() == Blocks.COBWEB) {
-					event.player.getPersistentData().putBoolean(ModConstants.NBT_TAG, false);
-					return;
+				if (event.player instanceof ServerPlayerEntity) {
+					((ServerPlayerEntity) event.player).connection.floatingTickCount = 0;
+					if (event.player.isInWater() || event.player.abilities.isFlying
+							|| event.player.abilities.allowFlying
+							|| event.player.world.getBlockState(playerPos).getBlock() == Blocks.COBWEB) {
+						event.player.getPersistentData().putBoolean(ModConstants.NBT_TAG, false);
+						return;
+					}
 				}
 			}
 		}
@@ -137,22 +161,31 @@ public class VoidTotem {
 				return;
 
 			ItemStack itemstack = null;
-
-			for (Hand hand : Hand.values()) { // for each hand
-				ItemStack itemStackHand = player.getHeldItem(hand);
-				boolean needsTotem = VoidTotemConfig.COMMON_CONFIG.NEEDS_TOTEM.get() ? false
-						: itemStackHand == ItemStack.EMPTY;
-				boolean isVoidTotem = itemStackHand.getItem() == VoidTotem.VOID_TOTEM_ITEM.get();
-				boolean isTotemOfUndying = VoidTotemConfig.COMMON_CONFIG.ALLOW_TOTEM_OF_UNDYING.get()
-						? itemStackHand.getItem() == Items.TOTEM_OF_UNDYING
-						: false;
-				if (needsTotem || isVoidTotem || isTotemOfUndying) { // is valid item / stack (see above)
-					itemstack = itemStackHand.copy();
-					if (itemStackHand != ItemStack.EMPTY || itemStackHand != null) { // add stats if not null / empty
-						player.addStat(Stats.ITEM_USED.get(itemStackHand.getItem()));
+			if (!VoidTotemConfig.COMMON_CONFIG.NEEDS_TOTEM.get()) {
+				itemstack = ItemStack.EMPTY;
+			} else {
+				if (ModUtils.isModLoaded(ModConstants.CURIOS_MOD_ID)) {
+					ItemStack curiosVoidTotemStack = ModUtils.findCuriosItem(VoidTotem.VOID_TOTEM_ITEM.get(), player);
+					ItemStack curiosVanillaTotemStack = VoidTotemConfig.COMMON_CONFIG.ALLOW_TOTEM_OF_UNDYING.get()
+							? ModUtils.findCuriosItem(Items.TOTEM_OF_UNDYING, player)
+							: ItemStack.EMPTY;
+					if (curiosVoidTotemStack != ItemStack.EMPTY) {
+						itemstack = copyAndRemoveItemStack(curiosVoidTotemStack, player);
+					} else if (curiosVanillaTotemStack != ItemStack.EMPTY) {
+						itemstack = copyAndRemoveItemStack(curiosVanillaTotemStack, player);
 					}
-					itemStackHand.shrink(1);
-					break;
+				}
+
+				for (Hand hand : Hand.values()) { // for each hand
+					ItemStack itemStackHand = player.getHeldItem(hand);
+					boolean isVoidTotem = itemStackHand.getItem() == VoidTotem.VOID_TOTEM_ITEM.get();
+					boolean isTotemOfUndying = VoidTotemConfig.COMMON_CONFIG.ALLOW_TOTEM_OF_UNDYING.get()
+							? itemStackHand.getItem() == Items.TOTEM_OF_UNDYING
+							: false;
+					if (isVoidTotem || isTotemOfUndying) { // is valid item / stack (see above)
+						itemstack = copyAndRemoveItemStack(itemStackHand, player);
+						break;
+					}
 				}
 			}
 
@@ -185,10 +218,20 @@ public class VoidTotem {
 
 				event.setCanceled(true);
 				player.getPersistentData().putBoolean(ModConstants.NBT_TAG, true); // add tag to prevent fall damage
-																					// when falling down
+
 				PacketHandler.sendToPlayer(new TotemEffectPacket(itemstack, player), player); // totem effect packet
+				PacketHandler.sendToAllTracking(new TotemEffectPacket(itemstack, player), player); // to all tracking
 			}
 		}
+	}
+
+	private static ItemStack copyAndRemoveItemStack(ItemStack itemStack, ServerPlayerEntity player) {
+		ItemStack itemStackCopy = itemStack.copy();
+		if (itemStack != ItemStack.EMPTY || itemStack != null) { // add stats if not null / empty
+			player.addStat(Stats.ITEM_USED.get(itemStack.getItem()));
+		}
+		itemStack.shrink(1);
+		return itemStackCopy;
 	}
 
 	private void livingFall(LivingFallEvent event) {

@@ -6,6 +6,7 @@ import com.affehund.voidtotem.VoidTotem;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkRegistry;
+import net.minecraftforge.fml.network.PacketDistributor;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 
 public class PacketHandler {
@@ -29,5 +30,9 @@ public class PacketHandler {
 
 	public static <MSG> void sendToPlayer(MSG message, ServerPlayerEntity player) {
 		MOD_CHANNEL.sendTo(message, player.connection.netManager, NetworkDirection.PLAY_TO_CLIENT);
+	}
+
+	public static <MSG> void sendToAllTracking(MSG message, ServerPlayerEntity entity) {
+		MOD_CHANNEL.send(PacketDistributor.TRACKING_ENTITY.with(() -> entity), message);
 	}
 }

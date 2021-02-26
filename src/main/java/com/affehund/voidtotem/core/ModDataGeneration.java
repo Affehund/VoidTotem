@@ -10,13 +10,17 @@ import org.apache.logging.log4j.Logger;
 import com.affehund.voidtotem.ModConstants;
 import com.affehund.voidtotem.VoidTotem;
 
+import net.minecraft.data.BlockTagsProvider;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.IFinishedRecipe;
+import net.minecraft.data.ItemTagsProvider;
 import net.minecraft.data.RecipeProvider;
 import net.minecraft.data.ShapedRecipeBuilder;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.tags.ITag;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.generators.ItemModelProvider;
 import net.minecraftforge.common.crafting.conditions.IConditionBuilder;
@@ -100,5 +104,30 @@ public class ModDataGeneration {
 					.addCriterion("has_emerald", hasItem(Items.EMERALD))
 					.addCriterion("has_totem", hasItem(Items.TOTEM_OF_UNDYING)).build(consumer);
 		}
+	}
+
+	public static final class BlockTagsGen extends BlockTagsProvider {
+		public BlockTagsGen(DataGenerator generatorIn, String modId, ExistingFileHelper existingFileHelper) {
+			super(generatorIn, modId, existingFileHelper);
+		}
+	}
+
+	public static final class ItemTagsGen extends ItemTagsProvider {
+
+		public ItemTagsGen(DataGenerator gen, BlockTagsProvider provider, String modID,
+				ExistingFileHelper existingFileHelper) {
+			super(gen, provider, modID, existingFileHelper);
+		}
+
+		@Override
+		protected void registerTags() {
+			this.getOrCreateBuilder(CURIOS_CHARM).add(VoidTotem.VOID_TOTEM_ITEM.get()).add(Items.TOTEM_OF_UNDYING);
+		}
+	}
+
+	public static final ITag.INamedTag<Item> CURIOS_CHARM = modTag("charm", ModConstants.CURIOS_MOD_ID);
+
+	private static ITag.INamedTag<Item> modTag(String name, String modID) {
+		return ItemTags.makeWrapperTag(modID + ":" + name);
 	}
 }

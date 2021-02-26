@@ -9,4 +9,6 @@ public final class ModConstants {
 	public static final String VOID_TOTEM_TOOLTIP = new String(ModConstants.MOD_ID + ".tooltip.totem_item");
 	public static final String NBT_TAG = new String(ModConstants.MOD_ID + "_living_falling");
 
+	public static final String CURIOS_MOD_ID = "curios";
+
 }
