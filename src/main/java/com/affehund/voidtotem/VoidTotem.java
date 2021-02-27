@@ -152,17 +152,23 @@ public class VoidTotem {
 		if (VoidTotemConfig.COMMON_CONFIG.BLACKLISTED_DIMENSIONS.get()
 				.contains(event.getEntityLiving().world.getDimensionKey().getLocation().toString())) // dim on blacklist
 			return;
-		if (event.getSource() != DamageSource.OUT_OF_WORLD) // not void damage
+		// no valid damage
+		if (event.getSource() != DamageSource.OUT_OF_WORLD)
+			return;
+		// important: player has to be below y=-64 (else /kill command wouldn't work
+		// when totem equiped)
+		if (event.getEntityLiving().getPosY() > -64)
 			return;
 		if (event.getEntityLiving() instanceof ServerPlayerEntity) { // is server player entity
 			ServerPlayerEntity player = (ServerPlayerEntity) event.getEntityLiving();
 			player.connection.floatingTickCount = 0;
 			if (event.getAmount() < player.getHealth()) // only run if player about to die
 				return;
-
 			ItemStack itemstack = null;
+			boolean foundValidStack = false;
 			if (!VoidTotemConfig.COMMON_CONFIG.NEEDS_TOTEM.get()) {
 				itemstack = ItemStack.EMPTY;
+				foundValidStack = true;
 			} else {
 				if (ModUtils.isModLoaded(ModConstants.CURIOS_MOD_ID)) {
 					ItemStack curiosVoidTotemStack = ModUtils.findCuriosItem(VoidTotem.VOID_TOTEM_ITEM.get(), player);
@@ -171,25 +177,30 @@ public class VoidTotem {
 							: ItemStack.EMPTY;
 					if (curiosVoidTotemStack != ItemStack.EMPTY) {
 						itemstack = copyAndRemoveItemStack(curiosVoidTotemStack, player);
+						foundValidStack = true;
 					} else if (curiosVanillaTotemStack != ItemStack.EMPTY) {
 						itemstack = copyAndRemoveItemStack(curiosVanillaTotemStack, player);
+						foundValidStack = true;
 					}
 				}
 
-				for (Hand hand : Hand.values()) { // for each hand
-					ItemStack itemStackHand = player.getHeldItem(hand);
-					boolean isVoidTotem = itemStackHand.getItem() == VoidTotem.VOID_TOTEM_ITEM.get();
-					boolean isTotemOfUndying = VoidTotemConfig.COMMON_CONFIG.ALLOW_TOTEM_OF_UNDYING.get()
-							? itemStackHand.getItem() == Items.TOTEM_OF_UNDYING
-							: false;
-					if (isVoidTotem || isTotemOfUndying) { // is valid item / stack (see above)
-						itemstack = copyAndRemoveItemStack(itemStackHand, player);
-						break;
+				if (!foundValidStack) {
+					for (Hand hand : Hand.values()) { // for each hand
+						ItemStack itemStackHand = player.getHeldItem(hand);
+						boolean isVoidTotem = itemStackHand.getItem() == VoidTotem.VOID_TOTEM_ITEM.get();
+						boolean isTotemOfUndying = VoidTotemConfig.COMMON_CONFIG.ALLOW_TOTEM_OF_UNDYING.get()
+								? itemStackHand.getItem() == Items.TOTEM_OF_UNDYING
+								: false;
+						if (isVoidTotem || isTotemOfUndying) { // is valid item
+							itemstack = copyAndRemoveItemStack(itemStackHand, player);
+							foundValidStack = true;
+							break;
+						}
 					}
 				}
 			}
 
-			if (itemstack != null) { // check if stack is null
+			if (itemstack != null && foundValidStack) { // check if stack is null
 				if (player.connection.targetPos != null) // wants to teleport
 					return;
 				if (player.isBeingRidden()) { // has passenger and remove it
