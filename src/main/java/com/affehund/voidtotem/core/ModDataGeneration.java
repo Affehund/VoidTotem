@@ -23,20 +23,33 @@ import net.minecraft.tags.ITag;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.generators.ItemModelProvider;
-import net.minecraftforge.common.crafting.conditions.IConditionBuilder;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.common.data.LanguageProvider;
 import net.minecraftforge.registries.ForgeRegistries;
 
+/**
+ * A class to create the jsons for our mod.
+ * 
+ * @see VoidTotem#gatherData
+ * 
+ * @author Affehund
+ *
+ */
 public class ModDataGeneration {
 	private static final Logger DATAGEN_LOGGER = LogManager.getLogger();
 
+	/**
+	 * A sub class for the creation of the language files.
+	 * 
+	 * @see LanguageProvider.class
+	 * 
+	 * @author Affehund
+	 *
+	 */
 	public static final class LanguageGen extends LanguageProvider {
-		public final String modID;
 
 		public LanguageGen(DataGenerator gen, String modid, String locale) {
 			super(gen, ModConstants.MOD_ID, locale);
-			this.modID = modid;
 		}
 
 		@Override
@@ -59,6 +72,14 @@ public class ModDataGeneration {
 		}
 	}
 
+	/**
+	 * A sub class to create the item model for the void totem.
+	 * 
+	 * @see ItemModelProvider.class
+	 * 
+	 * @author Affehund
+	 *
+	 */
 	public static final class ItemModelGen extends ItemModelProvider {
 		private final Set<Item> blacklist = new HashSet<>();
 
@@ -80,6 +101,12 @@ public class ModDataGeneration {
 			}
 		}
 
+		/**
+		 * Used to create a item/generated item for the given resoure location and item.
+		 * 
+		 * @param id   ResourceLocation
+		 * @param item Item
+		 */
 		protected void defaultItem(ResourceLocation id, Item item) {
 			this.withExistingParent(id.getPath(), "item/generated").texture("layer0",
 					new ResourceLocation(id.getNamespace(), "item/" + id.getPath()));
@@ -87,16 +114,30 @@ public class ModDataGeneration {
 		}
 	}
 
-	public static final class RecipeGen extends RecipeProvider implements IConditionBuilder {
+	/**
+	 * A sub class to create the void totem recipe.
+	 * 
+	 * @see RecipeProvider.class
+	 * 
+	 * @author Affehund
+	 *
+	 */
+	public static final class RecipeGen extends RecipeProvider {
 		public RecipeGen(DataGenerator gen) {
 			super(gen);
 		}
 
 		@Override
 		protected void registerRecipes(Consumer<IFinishedRecipe> consumer) {
-			// chorus fruit, eye of ender, chorus fruit
-			// emerald, totem of undying, emerald
-			// -, eye of ender, -
+			/**
+			 * The void totem is created with a shaped recipe:
+			 * 
+			 * chorus fruit, eye of ender, chorus fruit,
+			 * 
+			 * emerald, totem of undying, emerald
+			 * 
+			 * null, eye of ender, null
+			 */
 			ShapedRecipeBuilder.shapedRecipe(VoidTotem.VOID_TOTEM_ITEM.get()).patternLine("cec").patternLine("dtd")
 					.patternLine(" e ").key('c', Items.CHORUS_FRUIT).key('e', Items.ENDER_EYE).key('d', Items.EMERALD)
 					.key('t', Items.TOTEM_OF_UNDYING).addCriterion("has_chorus_fruit", hasItem(Items.CHORUS_FRUIT))
@@ -106,12 +147,30 @@ public class ModDataGeneration {
 		}
 	}
 
+	/**
+	 * A sub class with that block tags could be generated, only needed for the
+	 * ItemTagsGen.
+	 * 
+	 * @see BlockTagsProvider.class
+	 * @see ItemTagsGen.class
+	 * 
+	 * @author Affehund
+	 *
+	 */
 	public static final class BlockTagsGen extends BlockTagsProvider {
 		public BlockTagsGen(DataGenerator generatorIn, String modId, ExistingFileHelper existingFileHelper) {
 			super(generatorIn, modId, existingFileHelper);
 		}
 	}
 
+	/**
+	 * A sub class to create a tag to add the void totem and totem of undying to the
+	 * curios charm slot.
+	 * 
+	 * @see ItemTagsProvider
+	 * @author Affehund
+	 *
+	 */
 	public static final class ItemTagsGen extends ItemTagsProvider {
 
 		public ItemTagsGen(DataGenerator gen, BlockTagsProvider provider, String modID,
@@ -127,6 +186,12 @@ public class ModDataGeneration {
 
 	public static final ITag.INamedTag<Item> CURIOS_CHARM = modTag("charm", ModConstants.CURIOS_MOD_ID);
 
+	/**
+	 * @param name  String
+	 * @param modID String
+	 * @return an INamedTag for a given string (the tag name) and another string
+	 *         (the mod id).
+	 */
 	private static ITag.INamedTag<Item> modTag(String name, String modID) {
 		return ItemTags.makeWrapperTag(modID + ":" + name);
 	}

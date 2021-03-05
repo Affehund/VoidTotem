@@ -13,6 +13,11 @@ import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 /**
+ * A class to send a packet from the server to the given entity to play the
+ * totem animation.
+ * 
+ * @see VoidTotem#playActivateAnimation
+ * 
  * @author Affehund
  *
  */
@@ -31,11 +36,21 @@ public class TotemEffectPacket {
 		this.entity = entity;
 	}
 
+	/**
+	 * Used to encode the packet.
+	 * 
+	 * @param buf PacketBuffer
+	 */
 	public void encode(PacketBuffer buf) {
 		buf.writeItemStack(itemStack);
 		buf.writeInt(entity.getEntityId());
 	}
 
+	/**
+	 * Used to handle the packet.
+	 * 
+	 * @param context Supplier<NetworkEvent.Context
+	 */
 	@SuppressWarnings("deprecation")
 	public void handle(Supplier<NetworkEvent.Context> context) {
 		context.get().enqueueWork(() -> {

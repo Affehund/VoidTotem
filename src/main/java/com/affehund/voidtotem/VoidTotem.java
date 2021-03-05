@@ -24,7 +24,6 @@ import net.minecraft.particles.ParticleTypes;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -56,6 +55,8 @@ import top.theillusivec4.curios.api.SlotTypeMessage;
 import top.theillusivec4.curios.api.SlotTypePreset;
 
 /**
+ * The main mod class.
+ * 
  * @author Affehund
  *
  */
@@ -82,17 +83,26 @@ public class VoidTotem {
 		forgeEventBus.addListener(this::livingFall);
 		forgeEventBus.addListener(this::playerTick);
 
+		// register of the messages
 		PacketHandler.registerMessages();
+		// register of the config
 		ModLoadingContext.get().registerConfig(Type.COMMON, VoidTotemConfig.COMMON_CONFIG_SPEC,
 				ModConstants.COMMON_CONFIG_NAME);
 	}
 
+	// deferred register
 	public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS,
 			ModConstants.MOD_ID);
 
+	// the void totem item
 	public static final RegistryObject<Item> VOID_TOTEM_ITEM = ITEMS.register(ModConstants.VOID_TOTEM_STRING,
 			() -> new Item(new Item.Properties().maxStackSize(1).group(ItemGroup.COMBAT).rarity(Rarity.UNCOMMON)));
 
+	/**
+	 * Used to send an imc message to the curios api if the mod is loaded.
+	 * 
+	 * @param event InterModEnqueueEvent
+	 */
 	private void enqueueIMC(final InterModEnqueueEvent event) {
 		if (ModUtils.isModLoaded(ModConstants.CURIOS_MOD_ID)) {
 			InterModComms.sendTo(ModConstants.CURIOS_MOD_ID, SlotTypeMessage.REGISTER_TYPE,
@@ -101,17 +111,22 @@ public class VoidTotem {
 		}
 	}
 
+	/**
+	 * Used to create the json for lang / item / recipes / tags.
+	 * 
+	 * @param event GatherDataEvent
+	 */
 	private void gatherData(final GatherDataEvent event) {
 		DataGenerator generator = event.getGenerator();
 		ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
-		if (event.includeServer()) {
+		if (event.includeServer()) { // server side generators
 			generator.addProvider(new ModDataGeneration.RecipeGen(generator));
 			BlockTagsProvider blockTagsProvider = new ModDataGeneration.BlockTagsGen(generator, ModConstants.MOD_ID,
 					existingFileHelper);
 			generator.addProvider(new ModDataGeneration.ItemTagsGen(generator, blockTagsProvider, ModConstants.MOD_ID,
 					existingFileHelper));
 		}
-		if (event.includeClient()) {
+		if (event.includeClient()) { // client side generators
 			generator.addProvider(new ModDataGeneration.LanguageGen(generator, ModConstants.MOD_ID, "de_de"));
 			generator.addProvider(new ModDataGeneration.LanguageGen(generator, ModConstants.MOD_ID, "en_us"));
 			generator.addProvider(
@@ -119,6 +134,11 @@ public class VoidTotem {
 		}
 	}
 
+	/**
+	 * Used to add a tooltip for the void totem item.
+	 * 
+	 * @param event ItemTooltipEvent
+	 */
 	@OnlyIn(Dist.CLIENT)
 	@SubscribeEvent
 	public void tooltip(final ItemTooltipEvent event) {
@@ -129,9 +149,15 @@ public class VoidTotem {
 		}
 	}
 
-	private void playerTick(PlayerTickEvent event) {
+	/**
+	 * Used to check whether the player has the tag to prevent vanilla flying kick
+	 * and to check if the player is still flying and the removing the tag.
+	 * 
+	 * @param event PlayerTickEvent
+	 */
+	private void playerTick(final PlayerTickEvent event) {
 		if (event.side == LogicalSide.SERVER && event.phase == TickEvent.Phase.START) {
-			final BlockPos playerPos = event.player.getPosition();
+			BlockPos playerPos = event.player.getPosition();
 			if (event.player.getPersistentData().getBoolean(ModConstants.NBT_TAG)) {
 				if (event.player instanceof ServerPlayerEntity) {
 					((ServerPlayerEntity) event.player).connection.floatingTickCount = 0;
@@ -146,7 +172,49 @@ public class VoidTotem {
 		}
 	}
 
-	private void livingHurt(LivingHurtEvent event) {
+	/**
+	 * Used to do the void totem mechanic.
+	 * 
+	 * How it works in general:
+	 * 
+	 * 1. Check if it is on server side.
+	 * 
+	 * 2. Check if the current world isn't blacklisted.
+	 * 
+	 * 3. Check if the damage source is DamageSource.OUT_OF_WORLD.
+	 * 
+	 * 4. Check if the entity is below y = -64.
+	 * 
+	 * 5. Check if the damage is higher than actual health.
+	 * 
+	 * 6. Check if entity is a server player entity.
+	 * 
+	 * 7. Check a totem is needed (VoidTotemConfig#NEEDS_TOTEM).
+	 * 
+	 * 8. Else check if totems will be used from your inventory
+	 * (VoidTotemConfig#USE_TOTEM_FROM_INVENTORY).
+	 * 
+	 * 9. Else check if curios api is installed and take the totem from the charm
+	 * slot.
+	 * 
+	 * 10. Else check for a totem in the main / offhand.
+	 * 
+	 * 11. Check if there is a totem anywhere (see 7. - 10.).
+	 * 
+	 * 12. Prepare for teleporting.
+	 * 
+	 * 13. try 16 times to teleport the player to block below.
+	 * 
+	 * 14. Else just teleport the player to the height set in the config
+	 * (VoidTotemConfig#TELEPORT_HEIGHT).
+	 * 
+	 * 15. Cancle the event, and give the player the tag.
+	 * 
+	 * 16. Send the TotemEffectPacket to the player and the players around.
+	 * 
+	 * @param event LivingHurtEvent
+	 */
+	private void livingHurt(final LivingHurtEvent event) {
 		if (event.getEntity().world.isRemote()) // is client
 			return;
 		if (VoidTotemConfig.COMMON_CONFIG.BLACKLISTED_DIMENSIONS.get()
@@ -159,18 +227,30 @@ public class VoidTotem {
 		// when totem equiped)
 		if (event.getEntityLiving().getPosY() > -64)
 			return;
+		if (event.getAmount() < event.getEntityLiving().getHealth()) // only run if player about to die
+			return;
 		if (event.getEntityLiving() instanceof ServerPlayerEntity) { // is server player entity
 			ServerPlayerEntity player = (ServerPlayerEntity) event.getEntityLiving();
 			player.connection.floatingTickCount = 0;
-			if (event.getAmount() < player.getHealth()) // only run if player about to die
-				return;
+
 			ItemStack itemstack = null;
 			boolean foundValidStack = false;
-			if (!VoidTotemConfig.COMMON_CONFIG.NEEDS_TOTEM.get()) {
+
+			if (!VoidTotemConfig.COMMON_CONFIG.NEEDS_TOTEM.get()) { // totem is needed (config)
 				itemstack = ItemStack.EMPTY;
 				foundValidStack = true;
+			} else if (VoidTotemConfig.COMMON_CONFIG.USE_TOTEM_FROM_INVENTORY.get()) { // totems in the player inv used
+																						// (config)
+				for (int i = 0; i < player.inventory.getSizeInventory(); i++) { // for each player inventory slot
+					ItemStack stack = player.inventory.getStackInSlot(i);
+					if (isVoidTotemOrTotem(stack)) { // is valid item
+						itemstack = copyAndRemoveItemStack(stack, player);
+						foundValidStack = true;
+						break;
+					}
+				}
 			} else {
-				if (ModUtils.isModLoaded(ModConstants.CURIOS_MOD_ID)) {
+				if (ModUtils.isModLoaded(ModConstants.CURIOS_MOD_ID)) { // curios api is loaded
 					ItemStack curiosVoidTotemStack = ModUtils.findCuriosItem(VoidTotem.VOID_TOTEM_ITEM.get(), player);
 					ItemStack curiosVanillaTotemStack = VoidTotemConfig.COMMON_CONFIG.ALLOW_TOTEM_OF_UNDYING.get()
 							? ModUtils.findCuriosItem(Items.TOTEM_OF_UNDYING, player)
@@ -185,14 +265,10 @@ public class VoidTotem {
 				}
 
 				if (!foundValidStack) {
-					for (Hand hand : Hand.values()) { // for each hand
-						ItemStack itemStackHand = player.getHeldItem(hand);
-						boolean isVoidTotem = itemStackHand.getItem() == VoidTotem.VOID_TOTEM_ITEM.get();
-						boolean isTotemOfUndying = VoidTotemConfig.COMMON_CONFIG.ALLOW_TOTEM_OF_UNDYING.get()
-								? itemStackHand.getItem() == Items.TOTEM_OF_UNDYING
-								: false;
-						if (isVoidTotem || isTotemOfUndying) { // is valid item
-							itemstack = copyAndRemoveItemStack(itemStackHand, player);
+					for (Hand hand : Hand.values()) { // for each hand (main-/offhand)
+						ItemStack stack = player.getHeldItem(hand);
+						if (isVoidTotemOrTotem(stack)) { // is valid item
+							itemstack = copyAndRemoveItemStack(stack, player);
 							foundValidStack = true;
 							break;
 						}
@@ -200,7 +276,7 @@ public class VoidTotem {
 				}
 			}
 
-			if (itemstack != null && foundValidStack) { // check if stack is null
+			if (itemstack != null && foundValidStack) { // check if stack isn't null and if there
 				if (player.connection.targetPos != null) // wants to teleport
 					return;
 				if (player.isBeingRidden()) { // has passenger and remove it
@@ -209,7 +285,7 @@ public class VoidTotem {
 				player.stopRiding();
 
 				boolean teleportedToBlock = false;
-				for (int i = 0; i < 16; i++) { // try 16 times
+				for (int i = 0; i < 16; i++) { // try 16 times to teleport the player to a good spot
 					double x = player.getPosX() + (player.getRNG().nextDouble() - 0.5D) * 2.0D;
 					double y = MathHelper.clamp(player.getRNG().nextInt() * player.world.getHeight(), 0.0D,
 							player.world.getHeight() - 1);
@@ -236,16 +312,48 @@ public class VoidTotem {
 		}
 	}
 
+	/**
+	 * Used to check if the given stack is valid.
+	 * 
+	 * @param stack ItemStack
+	 * @return true if the given stack has a void totem or a totem of undying (has
+	 *         to be enabled in the config).
+	 */
+	public static boolean isVoidTotemOrTotem(ItemStack stack) {
+		Item item = stack.getItem();
+		boolean isVoidTotem = item == VoidTotem.VOID_TOTEM_ITEM.get();
+		boolean isTotemOfUndying = VoidTotemConfig.COMMON_CONFIG.ALLOW_TOTEM_OF_UNDYING.get()
+				? item == Items.TOTEM_OF_UNDYING
+				: false;
+		if (isVoidTotem || isTotemOfUndying) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Used to copy a given ItemStack of a ServerPlayerEntity, add an ITEM_USED
+	 * stat, shrink that stack and and return the copied stack.
+	 * 
+	 * @param itemStack ItemStack
+	 * @param player    ServerPlayerEntity
+	 * @return a copy of the given ItemStack.
+	 */
 	private static ItemStack copyAndRemoveItemStack(ItemStack itemStack, ServerPlayerEntity player) {
 		ItemStack itemStackCopy = itemStack.copy();
-		if (itemStack != ItemStack.EMPTY || itemStack != null) { // add stats if not null / empty
+		if (!itemStack.isEmpty()) { // add stats if stack isn't empty / null
 			player.addStat(Stats.ITEM_USED.get(itemStack.getItem()));
 		}
 		itemStack.shrink(1);
 		return itemStackCopy;
 	}
 
-	private void livingFall(LivingFallEvent event) {
+	/**
+	 * Used to prevent fall damage when the player has the tag.
+	 * 
+	 * @param event LivingFallEvent
+	 */
+	private void livingFall(final LivingFallEvent event) {
 		if (event.getEntity() instanceof ServerPlayerEntity) {
 			ServerPlayerEntity player = (ServerPlayerEntity) event.getEntity();
 			if (player.getPersistentData().getBoolean(ModConstants.NBT_TAG)) { // if has tag
@@ -257,6 +365,12 @@ public class VoidTotem {
 		}
 	}
 
+	/**
+	 * Used to play the totem animation for the given entity.
+	 * 
+	 * @param stack  ItemStack
+	 * @param entity Entity
+	 */
 	@OnlyIn(Dist.CLIENT)
 	public void playActivateAnimation(ItemStack stack, Entity entity) {
 		Minecraft mc = Minecraft.getInstance();
@@ -267,9 +381,5 @@ public class VoidTotem {
 		if (entity == mc.player) {
 			mc.gameRenderer.displayItemActivation(stack); // animation
 		}
-	}
-
-	public static ResourceLocation getModResourceLocation(String path) {
-		return new ResourceLocation(ModConstants.MOD_ID, path);
 	}
 }

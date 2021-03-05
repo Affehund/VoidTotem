@@ -16,6 +16,13 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 import net.minecraftforge.fml.config.ModConfig;
 
+/**
+ * A class for our config values (allow totem of undying, blacklisted
+ * dimensions, teleport height, etc...).
+ * 
+ * @author Affehund
+ *
+ */
 @Mod.EventBusSubscriber(modid = ModConstants.MOD_ID, bus = Bus.MOD)
 public class VoidTotemConfig {
 	public static class VoidCommonConfig {
@@ -23,6 +30,7 @@ public class VoidTotemConfig {
 		public final ConfigValue<ArrayList<String>> BLACKLISTED_DIMENSIONS;
 		public final BooleanValue NEEDS_TOTEM;
 		public final IntValue TELEPORT_HEIGHT;
+		public final BooleanValue USE_TOTEM_FROM_INVENTORY;
 
 		public VoidCommonConfig(ForgeConfigSpec.Builder builder) {
 			builder.comment("Void Totem Common Config").push("general");
@@ -38,6 +46,9 @@ public class VoidTotemConfig {
 			TELEPORT_HEIGHT = builder
 					.comment("This sets the height you will be teleported when you can't be placed on a block.")
 					.defineInRange("teleport_height", 320, 256, 2048);
+			USE_TOTEM_FROM_INVENTORY = builder.comment(
+					"This sets whether the totem prevents you from dying in the void if there is a totem anywhere in your inventory. If false the totem has to been in the main-/offhand or in the charm slot (curios api has to be installed).")
+					.define("use_totem_from_inventory", false);
 			builder.pop();
 		}
 	}

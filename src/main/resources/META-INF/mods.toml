@@ -1,29 +1,15 @@
 modLoader="javafml" #mandatory
-loaderVersion="[36,)" #mandatory
+loaderVersion="[34,)" #mandatory
 
 license="GNU GPLv3"
-issueTrackerURL="https://github.com/Affehund/Skiing/issues" #optional
+issueTrackerURL="https://github.com/Affehund/VoidTotem/issues" #optional
 displayURL="https://www.curseforge.com/minecraft/mc-mods/voidtotem" #optional
 logoFile="logo.png" #optional
 authors="Affehund" #optional
 [[mods]] #mandatory
-    modId="voidtotem" #mandatory
-    version="${file.jarVersion}" #mandatory
-    displayName="Void Totem" #mandatory
-    updateJSONURL="https://raw.githubusercontent.com/Affehund/VoidTotem/main/update.json" #optional
-    description='''A mod that adds a totem that prevents you from dying in the void.'''
+modId="voidtotem" #mandatory
+version="${file.jarVersion}" #mandatory
+displayName="Void Totem" #mandatory
+updateJSONURL="https://raw.githubusercontent.com/Affehund/VoidTotem/main/update.json" #optional
+description='''A mod that adds a totem that prevents you from dying in the void.'''
 
-# A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
-[[dependencies.voidtotem]] #optional
-    modId="forge" #mandatory
-    mandatory=true #mandatory
-    versionRange="[36,)" #mandatory
-    ordering="NONE"
-    side="BOTH"
-# Here's another dependency
-[[dependencies.voidtotem]]
-    modId="minecraft"
-    mandatory=true
-    versionRange="[1.16.5]"
-    ordering="NONE"
-    side="BOTH"
