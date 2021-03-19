@@ -60,7 +60,7 @@ public class ModDataGeneration {
 				add("_comment", "Translation (de_de) by Affehund");
 				add(VoidTotem.VOID_TOTEM_ITEM.get(), "Totem der Unsterblichkeit in der Leere");
 				add(ModConstants.VOID_TOTEM_TOOLTIP,
-						"Lege diese Totem in deine Haupt-/Nebenhand, um zu verhindern, du stirbst, wenn du in die Leere fällst.");
+						"Lege diese Totem in deine Haupt-/Nebenhand, um zu verhindern, dass du stirbst, wenn du in die Leere fällst.");
 				break;
 			case "en_us":
 				add("_comment", "Translation (en_us) by Affehund");
