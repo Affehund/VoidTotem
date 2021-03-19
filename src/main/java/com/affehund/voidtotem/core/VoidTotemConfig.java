@@ -1,69 +1,77 @@
 package com.affehund.voidtotem.core;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
-import org.apache.commons.lang3.tuple.Pair;
-
 import com.affehund.voidtotem.ModConstants;
-import com.affehund.voidtotem.VoidTotem;
+import com.affehund.voidtotem.VoidTotemFabric;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonSyntaxException;
 
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
-import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
-import net.minecraftforge.common.ForgeConfigSpec.IntValue;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
-import net.minecraftforge.fml.config.ModConfig;
+import net.fabricmc.loader.api.FabricLoader;
 
 /**
- * A class for our config values (allow totem of undying, blacklisted
- * dimensions, teleport height, etc...).
- * 
  * @author Affehund
  *
  */
-@Mod.EventBusSubscriber(modid = ModConstants.MOD_ID, bus = Bus.MOD)
 public class VoidTotemConfig {
-	public static class VoidCommonConfig {
-		public final BooleanValue ALLOW_TOTEM_OF_UNDYING;
-		public final ConfigValue<ArrayList<String>> BLACKLISTED_DIMENSIONS;
-		public final BooleanValue NEEDS_TOTEM;
-		public final IntValue TELEPORT_HEIGHT;
-		public final BooleanValue USE_TOTEM_FROM_INVENTORY;
+	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+	private static final File FILE = new File(
+			FabricLoader.getInstance().getConfigDir() + ModConstants.COMMON_CONFIG_NAME);
 
-		public VoidCommonConfig(ForgeConfigSpec.Builder builder) {
-			builder.comment("Void Totem Common Config").push("general");
-			ALLOW_TOTEM_OF_UNDYING = builder
-					.comment("This sets whether the totem of undying will prevent death when falling into the void.")
-					.define("allow_totem_of_undying", false);
-			BLACKLISTED_DIMENSIONS = builder.comment(
-					"This adds dimensions to a blacklist where you die if you fall into the void. Example: \"minecraft:overworld\".")
-					.define("blacklisted_dimensions", new ArrayList<String>());
-			NEEDS_TOTEM = builder
-					.comment("This sets whether you need a totem to prevent death when falling into the void.")
-					.define("needs_totem", true);
-			TELEPORT_HEIGHT = builder
-					.comment("This sets the height you will be teleported when you can't be placed on a block.")
-					.defineInRange("teleport_height", 320, 256, 2048);
-			USE_TOTEM_FROM_INVENTORY = builder.comment(
-					"This sets whether the totem prevents you from dying in the void if there is a totem anywhere in your inventory. If false the totem has to been in the main-/offhand or in the charm slot (curios api has to be installed).")
-					.define("use_totem_from_inventory", false);
-			builder.pop();
+	public Boolean ALLOW_TOTEM_OF_UNDYING;
+	public ArrayList<String> BLACKLISTED_DIMENSIONS;
+	public Boolean ENABLE_TOTEM_TOOLTIP;
+	public Boolean NEEDS_TOTEM;
+	public int TELEPORT_HEIGHT;
+	public Boolean USE_TOTEM_FROM_INVENTORY;
+
+	public VoidTotemConfig() {
+		this.ALLOW_TOTEM_OF_UNDYING = false;
+		this.BLACKLISTED_DIMENSIONS = new ArrayList<String>();
+		this.ENABLE_TOTEM_TOOLTIP = true;
+		this.NEEDS_TOTEM = true;
+		this.TELEPORT_HEIGHT = 320;
+		this.USE_TOTEM_FROM_INVENTORY = false;
+	}
+
+	public VoidTotemConfig(VoidTotemConfig config) {
+		this.ALLOW_TOTEM_OF_UNDYING = config.ALLOW_TOTEM_OF_UNDYING;
+		this.BLACKLISTED_DIMENSIONS = config.BLACKLISTED_DIMENSIONS;
+		this.ENABLE_TOTEM_TOOLTIP = config.ENABLE_TOTEM_TOOLTIP;
+		this.NEEDS_TOTEM = config.NEEDS_TOTEM;
+		this.TELEPORT_HEIGHT = config.TELEPORT_HEIGHT;
+		this.USE_TOTEM_FROM_INVENTORY = config.USE_TOTEM_FROM_INVENTORY;
+	}
+
+	public static VoidTotemConfig setup() {
+		if (!FILE.exists()) {
+			VoidTotemConfig config = new VoidTotemConfig();
+			config.create();
+			return config;
+		}
+		try {
+			FileReader fileReader = new FileReader(FILE);
+			VoidTotemConfig config = GSON.fromJson(fileReader, VoidTotemConfig.class);
+			VoidTotemFabric.LOGGER.debug("Reading config {}", FILE.getName());
+			return config != null ? config : new VoidTotemConfig();
+		} catch (IOException | JsonIOException | JsonSyntaxException e) {
+			VoidTotemFabric.LOGGER.error(e.getMessage(), e);
+			return new VoidTotemConfig();
 		}
 	}
 
-	public static final ForgeConfigSpec COMMON_CONFIG_SPEC;
-	public static final VoidCommonConfig COMMON_CONFIG;
-	static {
-		final Pair<VoidCommonConfig, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder()
-				.configure(VoidCommonConfig::new);
-		COMMON_CONFIG_SPEC = specPair.getRight();
-		COMMON_CONFIG = specPair.getLeft();
-	}
-
-	@SubscribeEvent
-	public static void onLoad(final ModConfig.Loading event) {
-		VoidTotem.LOGGER.info("Loaded {} config file from {}", event.getConfig().getFileName(), ModConstants.MOD_ID);
+	public void create() {
+		try (FileWriter fileWriter = new FileWriter(FILE)) {
+			fileWriter.write(GSON.toJson(this));
+			VoidTotemFabric.LOGGER.debug("Created new config {}", FILE.getName());
+		} catch (IOException e) {
+			VoidTotemFabric.LOGGER.error(e.getMessage(), e);
+		}
 	}
 }

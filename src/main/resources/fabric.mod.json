@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "voidtotem",
+  "version": "${version}",
+
+  "name": "Void Totem (Fabric)",
+  "description": "A mod that adds a totem that prevents you from dying in the void.",
+  "authors": [
+    "Affehund"
+  ],
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/voidtotem-fabric",
+    "sources": "https://github.com/affehund/VoidTotem/",
+    "issues": "https://github.com/affehund/VoidTotem/issues"
+  },
+
+  "license": "GNU GPLv3",
+  "icon": "logo.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.affehund.voidtotem.VoidTotemFabric"
+    ],
+    "client": [
+      "com.affehund.voidtotem.VoidTotemFabricClient"
+    ]
+  },
+  
+  "accessWidener" : "voidtotem.accesswidener",
+  
+  "mixins": [
+  	"voidtotem.mixins.json"
+  ],
+  
+  "depends": {
+    "fabricloader": ">=0.7.4",
+    "fabric": "*",
+    "minecraft": ">=1.16.2"
+  }
+}
