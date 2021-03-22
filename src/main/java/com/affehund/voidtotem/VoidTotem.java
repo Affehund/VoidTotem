@@ -9,6 +9,7 @@ import com.affehund.voidtotem.core.VoidTotemConfig;
 import com.affehund.voidtotem.core.network.PacketHandler;
 import com.affehund.voidtotem.core.network.TotemEffectPacket;
 
+import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.data.BlockTagsProvider;
@@ -20,12 +21,13 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.Rarity;
+import net.minecraft.loot.LootPool;
+import net.minecraft.loot.TableLootEntry;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
 import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -33,6 +35,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.data.ExistingFileHelper;
+import net.minecraftforge.event.LootTableLoadEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.TickEvent.PlayerTickEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
@@ -72,7 +75,7 @@ public class VoidTotem {
 
 	public VoidTotem() {
 		INSTANCE = this;
-		LOGGER.debug("Loading up " + ModConstants.MOD_NAME + "!");
+		LOGGER.debug("Loading up {}!", ModConstants.MOD_NAME);
 
 		modEventBus.addListener(this::gatherData);
 		modEventBus.addListener(this::enqueueIMC);
@@ -95,8 +98,23 @@ public class VoidTotem {
 			ModConstants.MOD_ID);
 
 	// the void totem item
-	public static final RegistryObject<Item> VOID_TOTEM_ITEM = ITEMS.register(ModConstants.VOID_TOTEM_STRING,
+	public static final RegistryObject<Item> VOID_TOTEM_ITEM = ITEMS.register(ModConstants.ITEM_VOID_TOTEM,
 			() -> new Item(new Item.Properties().maxStackSize(1).group(ItemGroup.COMBAT).rarity(Rarity.UNCOMMON)));
+
+	@SubscribeEvent
+	public void loadLootTables(final LootTableLoadEvent event) {
+		if (VoidTotemConfig.COMMON_CONFIG.ADD_END_CITY_TREASURE.get()) {
+
+			if (event.getName().equals(ModConstants.LOCATION_END_CITY_TREASURE)) {
+				LOGGER.debug("Injecting loottable {} from {}", ModConstants.LOCATION_END_CITY_TREASURE.toString(),
+						ModConstants.MOD_ID);
+				event.getTable()
+						.addPool(LootPool.builder()
+								.addEntry(TableLootEntry.builder(ModConstants.LOCATION_END_CITY_TREASURE_INJECTION))
+								.name(ModConstants.MOD_ID + "_injection").build());
+			}
+		}
+	}
 
 	/**
 	 * Used to send an imc message to the curios api if the mod is loaded.
@@ -107,7 +125,7 @@ public class VoidTotem {
 		if (ModUtils.isModLoaded(ModConstants.CURIOS_MOD_ID)) {
 			InterModComms.sendTo(ModConstants.CURIOS_MOD_ID, SlotTypeMessage.REGISTER_TYPE,
 					() -> SlotTypePreset.CHARM.getMessageBuilder().build());
-			VoidTotem.LOGGER.info("Enqueued IMC to {}", ModConstants.CURIOS_MOD_ID);
+			VoidTotem.LOGGER.debug("Enqueued IMC to {}", ModConstants.CURIOS_MOD_ID);
 		}
 	}
 
@@ -125,6 +143,8 @@ public class VoidTotem {
 					existingFileHelper);
 			generator.addProvider(new ModDataGeneration.ItemTagsGen(generator, blockTagsProvider, ModConstants.MOD_ID,
 					existingFileHelper));
+			generator.addProvider(new ModDataGeneration.AdvancementGen(generator));
+			generator.addProvider(new ModDataGeneration.LootTableGen(generator));
 		}
 		if (event.includeClient()) { // client side generators
 			generator.addProvider(new ModDataGeneration.LanguageGen(generator, ModConstants.MOD_ID, "de_de"));
@@ -143,9 +163,10 @@ public class VoidTotem {
 	@SubscribeEvent
 	public void tooltip(final ItemTooltipEvent event) {
 		ItemStack stack = event.getItemStack();
-		if (stack.getItem() == VoidTotem.VOID_TOTEM_ITEM.get()) {
+		if (stack.getItem() == VoidTotem.VOID_TOTEM_ITEM.get()
+				&& VoidTotemConfig.COMMON_CONFIG.SHOW_TOTEM_TOOLTIP.get()) {
 			event.getToolTip().add(
-					new TranslationTextComponent(ModConstants.VOID_TOTEM_TOOLTIP).mergeStyle(TextFormatting.GREEN));
+					new TranslationTextComponent(ModConstants.TOOLTIP_VOID_TOTEM).mergeStyle(TextFormatting.GREEN));
 		}
 	}
 
@@ -157,15 +178,13 @@ public class VoidTotem {
 	 */
 	private void playerTick(final PlayerTickEvent event) {
 		if (event.side == LogicalSide.SERVER && event.phase == TickEvent.Phase.START) {
-			BlockPos playerPos = event.player.getPosition();
-			if (event.player.getPersistentData().getBoolean(ModConstants.NBT_TAG)) {
-				if (event.player instanceof ServerPlayerEntity) {
-					((ServerPlayerEntity) event.player).connection.floatingTickCount = 0;
-					if (event.player.isInWater() || event.player.abilities.isFlying
-							|| event.player.abilities.allowFlying
-							|| event.player.world.getBlockState(playerPos).getBlock() == Blocks.COBWEB) {
-						event.player.getPersistentData().putBoolean(ModConstants.NBT_TAG, false);
-						return;
+			if (event.player instanceof ServerPlayerEntity) {
+				ServerPlayerEntity player = (ServerPlayerEntity) event.player;
+				if (player.getPersistentData().getBoolean(ModConstants.NBT_TAG)) {
+					player.connection.floatingTickCount = 0;
+					if (player.isInWater() || player.abilities.isFlying || player.abilities.allowFlying
+							|| player.world.getBlockState(player.getPosition()).getBlock() == Blocks.COBWEB) {
+						player.getPersistentData().putBoolean(ModConstants.NBT_TAG, false);
 					}
 				}
 			}
@@ -203,7 +222,7 @@ public class VoidTotem {
 	 * 
 	 * 12. Prepare for teleporting.
 	 * 
-	 * 13. try 16 times to teleport the player to block below.
+	 * 13. Try 16 times to teleport the player to block below.
 	 * 
 	 * 14. Else just teleport the player to the height set in the config
 	 * (VoidTotemConfig#TELEPORT_HEIGHT).
@@ -333,7 +352,8 @@ public class VoidTotem {
 
 	/**
 	 * Used to copy a given ItemStack of a ServerPlayerEntity, add an ITEM_USED
-	 * stat, shrink that stack and and return the copied stack.
+	 * stat, grant the void totem advancement, shrink the stack and and return the
+	 * copied stack.
 	 * 
 	 * @param itemStack ItemStack
 	 * @param player    ServerPlayerEntity
@@ -343,6 +363,7 @@ public class VoidTotem {
 		ItemStack itemStackCopy = itemStack.copy();
 		if (!itemStack.isEmpty()) { // add stats if stack isn't empty / null
 			player.addStat(Stats.ITEM_USED.get(itemStack.getItem()));
+			CriteriaTriggers.USED_TOTEM.trigger(player, itemStack);
 		}
 		itemStack.shrink(1);
 		return itemStackCopy;

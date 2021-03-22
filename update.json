@@ -4,10 +4,11 @@
     	"voidtotem-1.16.5-1.0.0" : "Initial release",
 		"voidtotem-1.16.5-1.1.0" : "Additions:\n- curios compatibility (a slot for the totem)\n- visible effects for all players around the player who was saved with the totem\nTweaks and code improvements",
 		"voidtotem-1.16.5-1.1.1" : "Fixed bugs:\n- player can't be killed by /kill command when void totem equipped\n- if totem in curios slot and hand, 2 totems were removed",
-		"voidtotem-1.16.5-1.2.0" : "Additions:\n- a config to just need to have the totem anywhere in your inventory\n- version support for 1.16-3-1.16.5\n\nImproved and commented code"
+		"voidtotem-1.16.5-1.2.0" : "Additions:\n- a config to just need to have the totem anywhere in your inventory\n- version support for 1.16-3-1.16.5\n\nImproved and commented code",
+		"voidtotem-1.16.5-1.3.0" : "Additions:\n- a new advancement fired when you use a void totem to save you from death\n- a config to disable the tooltip for the void totem and to disabled the end city treasure\n- end city treasure loot for the void totem\n\nImproved code and small tweaks"
 	},
   	"promos" : {
-    	"1.16.5-latest" : "voidtotem-1.16.5-1.2.0",
-    	"1.16.5-recommended" : "voidtotem-1.16.5-1.2.0"
+    	"1.16.5-latest" : "voidtotem-1.16.5-1.3.0",
+    	"1.16.5-recommended" : "voidtotem-1.16.5-1.3.0"
   	}
 }
