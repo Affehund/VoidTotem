@@ -12,7 +12,7 @@ import net.minecraft.item.ItemStack;
  */
 public class ClientPacketHandler {
 	public static void register() {
-		ClientPlayNetworking.registerGlobalReceiver(ModConstants.TOTEM_EFFECT_PACKET,
+		ClientPlayNetworking.registerGlobalReceiver(ModConstants.IDENTIFIER_TOTEM_EFFECT_PACKET,
 				(client, handler, buf, responseSender) -> {
 					ItemStack itemStack = buf.readItemStack();
 					Entity entity = client.world.getEntityById(buf.readInt());

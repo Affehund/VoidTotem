@@ -24,18 +24,20 @@ public class VoidTotemConfig {
 	private static final File FILE = new File(
 			FabricLoader.getInstance().getConfigDir() + ModConstants.COMMON_CONFIG_NAME);
 
+	public Boolean ADD_END_CITY_TREASURE;
 	public Boolean ALLOW_TOTEM_OF_UNDYING;
 	public ArrayList<String> BLACKLISTED_DIMENSIONS;
-	public Boolean ENABLE_TOTEM_TOOLTIP;
 	public Boolean NEEDS_TOTEM;
+	public Boolean SHOW_TOTEM_TOOLTIP;
 	public int TELEPORT_HEIGHT;
 	public Boolean USE_TOTEM_FROM_INVENTORY;
 
 	public VoidTotemConfig() {
+		this.ADD_END_CITY_TREASURE = true;
 		this.ALLOW_TOTEM_OF_UNDYING = false;
 		this.BLACKLISTED_DIMENSIONS = new ArrayList<String>();
-		this.ENABLE_TOTEM_TOOLTIP = true;
 		this.NEEDS_TOTEM = true;
+		this.SHOW_TOTEM_TOOLTIP = true;
 		this.TELEPORT_HEIGHT = 320;
 		this.USE_TOTEM_FROM_INVENTORY = false;
 	}
@@ -43,8 +45,8 @@ public class VoidTotemConfig {
 	public VoidTotemConfig(VoidTotemConfig config) {
 		this.ALLOW_TOTEM_OF_UNDYING = config.ALLOW_TOTEM_OF_UNDYING;
 		this.BLACKLISTED_DIMENSIONS = config.BLACKLISTED_DIMENSIONS;
-		this.ENABLE_TOTEM_TOOLTIP = config.ENABLE_TOTEM_TOOLTIP;
 		this.NEEDS_TOTEM = config.NEEDS_TOTEM;
+		this.SHOW_TOTEM_TOOLTIP = config.SHOW_TOTEM_TOOLTIP;
 		this.TELEPORT_HEIGHT = config.TELEPORT_HEIGHT;
 		this.USE_TOTEM_FROM_INVENTORY = config.USE_TOTEM_FROM_INVENTORY;
 	}

@@ -6,9 +6,12 @@ import org.apache.logging.log4j.Logger;
 import com.affehund.voidtotem.core.VoidTotemConfig;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.loot.v1.FabricLootSupplier;
+import net.fabricmc.fabric.api.loot.v1.event.LootTableLoadingCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.loot.LootTable;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
 import net.minecraft.util.registry.Registry;
@@ -27,7 +30,7 @@ public class VoidTotemFabric implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		LOGGER.debug("Loading up {}!", ModConstants.MOD_NAME);
-		Registry.register(Registry.ITEM, new Identifier(ModConstants.MOD_ID, ModConstants.VOID_TOTEM_STRING),
+		Registry.register(Registry.ITEM, new Identifier(ModConstants.MOD_ID, ModConstants.ITEM_VOID_TOTEM),
 				VOID_TOTEM_ITEM);
 		CONFIG = VoidTotemConfig.setup();
 
@@ -35,5 +38,12 @@ public class VoidTotemFabric implements ModInitializer {
 			CuriosApi.enqueueSlotType(BuildScheme.REGISTER, SlotTypePreset.CHARM.getInfoBuilder().build());
 			LOGGER.debug("Enqueued IMC to {}", ModConstants.CURIOS_MOD_ID);
 		}
+
+		LootTableLoadingCallback.EVENT.register((resourceManager, lootManager, id, supplier, setter) -> {
+			if (ModConstants.IDENTIFIER_END_CITY_TREASURE.equals(id) && CONFIG.ADD_END_CITY_TREASURE) {
+				LootTable table = lootManager.getTable(ModConstants.IDENTIFIER_END_CITY_TREASURE_INJECTION);
+				supplier.withPools(((FabricLootSupplier) table).getPools());
+			}
+		});
 	}
 }

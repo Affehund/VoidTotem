@@ -11,6 +11,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -29,6 +30,8 @@ import net.minecraft.util.math.MathHelper;
 import top.theillusivec4.curios.api.CuriosApi;
 
 /**
+ * A class with some utilities methods for the mod.
+ * 
  * @author Affehund
  *
  */
@@ -53,6 +56,7 @@ public class ModUtils {
 		ItemStack itemStackCopy = itemStack.copy();
 		if (!itemStack.isEmpty()) { // add stats if stack isn't empty / null
 			player.incrementStat(Stats.USED.getOrCreateStat(itemStack.getItem()));
+			Criteria.USED_TOTEM.trigger(player, itemStack);
 		}
 		itemStack.decrement(1);
 		return itemStackCopy;
@@ -75,8 +79,7 @@ public class ModUtils {
 				itemstack = ItemStack.EMPTY;
 				foundValidStack = true;
 			} else if (VoidTotemFabric.CONFIG.USE_TOTEM_FROM_INVENTORY) { // totems in the
-				// player inv
-				// used (config)
+				// player inv used (config)
 				for (int i = 0; i < player.inventory.size(); i++) { // for each player inventory slot
 					ItemStack stack = player.inventory.getStack(i);
 					if (ModUtils.isVoidTotemOrTotem(stack)) { // is valid item
@@ -145,15 +148,13 @@ public class ModUtils {
 				PacketByteBuf buf = PacketByteBufs.create();
 				buf.writeItemStack(itemstack);
 				buf.writeInt(player.getEntityId());
-				ServerPlayNetworking.send(player, ModConstants.TOTEM_EFFECT_PACKET, buf);
+				ServerPlayNetworking.send(player, ModConstants.IDENTIFIER_TOTEM_EFFECT_PACKET, buf);
 				for (ServerPlayerEntity player2 : PlayerLookup.tracking((ServerWorld) player.world,
 						player.getBlockPos())) {
-					ServerPlayNetworking.send(player2, ModConstants.TOTEM_EFFECT_PACKET, buf);
+					ServerPlayNetworking.send(player2, ModConstants.IDENTIFIER_TOTEM_EFFECT_PACKET, buf);
 				}
-
 				return true;
 			}
-
 		}
 		return false;
 	}

@@ -28,11 +28,11 @@ public class ItemMixin {
 	@Inject(method = "appendTooltip(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;Ljava/util/List;Lnet/minecraft/client/item/TooltipContext;)V", at = @At("HEAD"))
 	public void appendTooltip(ItemStack itemStack, World world, List<Text> tooltip, TooltipContext tooltipContext,
 			CallbackInfo info) {
-		if (VoidTotemFabric.CONFIG.ENABLE_TOTEM_TOOLTIP) {
+		if (VoidTotemFabric.CONFIG.SHOW_TOTEM_TOOLTIP) {
 			Item stack = (Item) (Object) this;
 			if (stack == VoidTotemFabric.VOID_TOTEM_ITEM
 					|| (stack == Items.TOTEM_OF_UNDYING && VoidTotemFabric.CONFIG.ALLOW_TOTEM_OF_UNDYING)) {
-				tooltip.add(new TranslatableText(ModConstants.VOID_TOTEM_TOOLTIP).formatted(Formatting.GREEN));
+				tooltip.add(new TranslatableText(ModConstants.TOOLTIP_VOID_TOTEM).formatted(Formatting.GREEN));
 			}
 		}
 	}
