@@ -48,7 +48,7 @@ public class VoidTotemConfig {
 			NEEDS_TOTEM = builder
 					.comment("This sets whether you need a totem to prevent death when falling into the void.")
 					.define("needs_totem", true);
-			SHOW_TOTEM_TOOLTIP = builder.comment("This sets whether a tooltip is show on the totem.")
+			SHOW_TOTEM_TOOLTIP = builder.comment("This sets whether a tooltip is shown on the totem.")
 					.define("show_totem_tooltip", true);
 			TELEPORT_HEIGHT = builder
 					.comment("This sets the height you will be teleported when you can't be placed on a block.")
