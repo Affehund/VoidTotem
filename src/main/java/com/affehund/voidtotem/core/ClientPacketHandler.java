@@ -1,7 +1,5 @@
 package com.affehund.voidtotem.core;
 
-import com.affehund.voidtotem.ModConstants;
-
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;

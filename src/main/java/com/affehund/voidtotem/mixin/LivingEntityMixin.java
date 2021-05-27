@@ -5,7 +5,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import com.affehund.voidtotem.ModConstants;
+import com.affehund.voidtotem.core.ModConstants;
 import com.affehund.voidtotem.core.ModUtils;
 
 import net.minecraft.entity.LivingEntity;

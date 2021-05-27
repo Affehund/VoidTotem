@@ -3,6 +3,7 @@ package com.affehund.voidtotem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.affehund.voidtotem.core.ModConstants;
 import com.affehund.voidtotem.core.VoidTotemConfig;
 
 import net.fabricmc.api.ModInitializer;

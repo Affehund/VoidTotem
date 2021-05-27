@@ -2,7 +2,6 @@ package com.affehund.voidtotem.core;
 
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 
-import com.affehund.voidtotem.ModConstants;
 import com.affehund.voidtotem.VoidTotemFabric;
 
 import net.fabricmc.api.EnvType;
@@ -26,6 +25,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
 import net.minecraft.util.Hand;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import top.theillusivec4.curios.api.CuriosApi;
 
@@ -124,12 +124,16 @@ public class ModUtils {
 				}
 				player.stopRiding();
 
+				long lastBlockPos = ((IPlayerEntityMixinAccessor) player).getBlockPosAsLong();
+				BlockPos teleportPos = BlockPos.fromLong(lastBlockPos);
+
 				boolean teleportedToBlock = false;
 				for (int i = 0; i < 16; i++) { // try 16 times to teleport the player to a good spot
-					double x = player.getX() + (player.getRandom().nextDouble() - 0.5D) * 2.0D;
+
+					double x = teleportPos.getX() + (player.getRandom().nextDouble() - 0.5D) * 4.0D;
 					double y = MathHelper.clamp(player.getRandom().nextInt() * player.world.getHeight(), 0.0D,
 							player.world.getHeight() - 1);
-					double z = player.getZ() + (player.getRandom().nextDouble() - 0.5D) * 2.0;
+					double z = teleportPos.getZ() + (player.getRandom().nextDouble() - 0.5D) * 4.0;
 
 					if (player.teleport(x, y, z, true)) { // if can teleport break
 						teleportedToBlock = true;
@@ -138,7 +142,7 @@ public class ModUtils {
 				}
 
 				if (!teleportedToBlock) { // if can't teleport to a block teleport to height set in config
-					player.teleport(player.getX(), VoidTotemFabric.CONFIG.TELEPORT_HEIGHT, player.getZ());
+					player.teleport(teleportPos.getX(), VoidTotemFabric.CONFIG.TELEPORT_HEIGHT, teleportPos.getZ());
 					player.networkHandler.floatingTicks = 0;
 				}
 

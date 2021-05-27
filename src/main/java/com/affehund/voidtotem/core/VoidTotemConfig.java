@@ -6,7 +6,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import com.affehund.voidtotem.ModConstants;
 import com.affehund.voidtotem.VoidTotemFabric;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
