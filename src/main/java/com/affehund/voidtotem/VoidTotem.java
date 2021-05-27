@@ -28,6 +28,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
 import net.minecraft.util.SoundEvents;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -101,6 +102,11 @@ public class VoidTotem {
 	public static final RegistryObject<Item> VOID_TOTEM_ITEM = ITEMS.register(ModConstants.ITEM_VOID_TOTEM,
 			() -> new Item(new Item.Properties().maxStackSize(1).group(ItemGroup.COMBAT).rarity(Rarity.UNCOMMON)));
 
+	/**
+	 * Used to add the void totem to the end city loot treasure.
+	 * 
+	 * @param event LootTableLoadEvent
+	 */
 	@SubscribeEvent
 	public void loadLootTables(final LootTableLoadEvent event) {
 		if (VoidTotemConfig.COMMON_CONFIG.ADD_END_CITY_TREASURE.get()) {
@@ -180,10 +186,21 @@ public class VoidTotem {
 		if (event.side == LogicalSide.SERVER && event.phase == TickEvent.Phase.START) {
 			if (event.player instanceof ServerPlayerEntity) {
 				ServerPlayerEntity player = (ServerPlayerEntity) event.player;
+
+				BlockPos pos = player.getPosition();
+
+				long lastPosLong = player.getPersistentData().getLong(ModConstants.LAST_BLOCK_POS);
+				BlockPos lastPos = BlockPos.fromLong(lastPosLong);
+				if (player.world.getBlockState(pos.down()).isSolid()) {
+					if (!lastPos.equals(pos)) {
+						player.getPersistentData().putLong(ModConstants.LAST_BLOCK_POS, pos.toLong());
+					}
+				}
+
 				if (player.getPersistentData().getBoolean(ModConstants.NBT_TAG)) {
 					player.connection.floatingTickCount = 0;
 					if (player.isInWater() || player.abilities.isFlying || player.abilities.allowFlying
-							|| player.world.getBlockState(player.getPosition()).getBlock() == Blocks.COBWEB) {
+							|| player.world.getBlockState(pos).getBlock() == Blocks.COBWEB) {
 						player.getPersistentData().putBoolean(ModConstants.NBT_TAG, false);
 					}
 				}
@@ -222,7 +239,7 @@ public class VoidTotem {
 	 * 
 	 * 12. Prepare for teleporting.
 	 * 
-	 * 13. Try 16 times to teleport the player to block below.
+	 * 13. Try 16 times to teleport the player to last block standing on.
 	 * 
 	 * 14. Else just teleport the player to the height set in the config
 	 * (VoidTotemConfig#TELEPORT_HEIGHT).
@@ -303,12 +320,17 @@ public class VoidTotem {
 				}
 				player.stopRiding();
 
+				long lastBlockPos = player.getPersistentData().getLong(ModConstants.LAST_BLOCK_POS); // get last pos
+				BlockPos teleportPos = BlockPos.fromLong(lastBlockPos); // convert to block pos
+
 				boolean teleportedToBlock = false;
+
 				for (int i = 0; i < 16; i++) { // try 16 times to teleport the player to a good spot
-					double x = player.getPosX() + (player.getRNG().nextDouble() - 0.5D) * 2.0D;
+
+					double x = teleportPos.getX() + (player.getRNG().nextDouble() - 0.5D) * 4.0D;
 					double y = MathHelper.clamp(player.getRNG().nextInt() * player.world.getHeight(), 0.0D,
 							player.world.getHeight() - 1);
-					double z = player.getPosZ() + (player.getRNG().nextDouble() - 0.5D) * 2.0;
+					double z = teleportPos.getZ() + (player.getRNG().nextDouble() - 0.5D) * 4.0;
 
 					if (player.attemptTeleport(x, y, z, true)) { // if can teleport break
 						teleportedToBlock = true;
@@ -317,8 +339,8 @@ public class VoidTotem {
 				}
 
 				if (!teleportedToBlock) { // if can't teleport to a block teleport to height set in config
-					player.setPositionAndUpdate(player.getPosX(), VoidTotemConfig.COMMON_CONFIG.TELEPORT_HEIGHT.get(),
-							player.getPosZ());
+					player.setPositionAndUpdate(teleportPos.getX(), VoidTotemConfig.COMMON_CONFIG.TELEPORT_HEIGHT.get(),
+							teleportPos.getZ());
 					player.connection.floatingTickCount = 0;
 				}
 

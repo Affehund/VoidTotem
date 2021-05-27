@@ -13,6 +13,8 @@ public final class ModConstants {
 	public static final String MOD_NAME = "Void Totem";
 	public static final String CHANNEL_NAME = "main_channel";
 	public static final String NBT_TAG = MOD_ID + "_living_falling";
+	public static final String LAST_BLOCK_POS = MOD_ID + "_last_block_pos";
+
 	public static final String COMMON_CONFIG_NAME = MOD_ID + "-common.toml";
 
 	public static final String ITEM_VOID_TOTEM = "totem_of_void_undying";
