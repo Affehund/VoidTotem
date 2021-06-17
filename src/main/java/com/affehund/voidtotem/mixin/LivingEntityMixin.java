@@ -26,8 +26,9 @@ public class LivingEntityMixin {
 		}
 	}
 
-	@Inject(method = "handleFallDamage(FF)Z", at = @At("HEAD"), cancellable = true)
-	private void handleFallDamage(float fallDistance, float damageMultiplier, CallbackInfoReturnable<Boolean> info) {
+	// Strg + K + C / U
+	@Inject(method = "handleFallDamage", at = @At("HEAD"), cancellable = true)
+	private void handleFallDamage(float fallDistance, float damageMultiplier, DamageSource damageSource, CallbackInfoReturnable<Boolean> info) {
 		LivingEntity livingEntity = (LivingEntity) (Object) this;
 		if (livingEntity instanceof ServerPlayerEntity) {
 			ServerPlayerEntity player = ((ServerPlayerEntity) ((Object) this));

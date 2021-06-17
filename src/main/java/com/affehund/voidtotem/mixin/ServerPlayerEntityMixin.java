@@ -34,7 +34,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
 
 			long lastPosLong = ((IPlayerEntityMixinAccessor) player).getBlockPosAsLong();
 			BlockPos lastPos = BlockPos.fromLong(lastPosLong);
-			if (player.world.getBlockState(pos.down()).isOpaque()) {
+			if (player.world.getBlockState(pos.down()).isSolidBlock(world, pos.down())) {
 				if (!lastPos.equals(pos)) {
 					((IPlayerEntityMixinAccessor) player).setBlockPosAsLong(pos.asLong());
 				}
@@ -42,7 +42,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
 
 			if (player.getScoreboardTags().contains(ModConstants.NBT_TAG)) {
 				player.networkHandler.floatingTicks = 0;
-				if (player.isSubmergedInWater() || player.abilities.flying || player.abilities.allowFlying
+				if (player.isSubmergedInWater() || player.getAbilities().flying || player.getAbilities().allowFlying
 						|| player.world.getBlockState(pos).getBlock() == Blocks.COBWEB) {
 					player.removeScoreboardTag(ModConstants.NBT_TAG);
 					return;

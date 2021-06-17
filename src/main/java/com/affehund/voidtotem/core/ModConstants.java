@@ -23,5 +23,5 @@ public final class ModConstants {
 	public static final Identifier IDENTIFIER_END_CITY_TREASURE_INJECTION = new Identifier(MOD_ID,
 			"inject/end_city_treasure");
 
-	public static final String CURIOS_MOD_ID = "curios";
+	public static final String TRINKETS_MOD_ID = "trinkets";
 }

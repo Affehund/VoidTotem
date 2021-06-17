@@ -1,9 +1,10 @@
 package com.affehund.voidtotem.core;
-
-import org.apache.commons.lang3.tuple.ImmutableTriple;
+import java.util.List;
 
 import com.affehund.voidtotem.VoidTotemFabric;
 
+import dev.emi.trinkets.api.SlotReference;
+import dev.emi.trinkets.api.TrinketsApi;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
@@ -25,9 +26,9 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import top.theillusivec4.curios.api.CuriosApi;
 
 /**
  * A class with some utilities methods for the mod.
@@ -37,8 +38,10 @@ import top.theillusivec4.curios.api.CuriosApi;
  */
 public class ModUtils {
 	public static ItemStack findCuriosItem(Item item, ServerPlayerEntity player) {
-		return CuriosApi.getCuriosHelper().findEquippedCurio(item, player).map(ImmutableTriple::getRight)
-				.orElse(ItemStack.EMPTY);
+		return TrinketsApi.getTrinketComponent(player).map(component -> {
+			List<Pair<SlotReference, ItemStack>> res = component.getEquipped(item);
+			return res.size() > 0 ? res.get(0).getRight() : ItemStack.EMPTY;
+		}).orElse(ItemStack.EMPTY);
 	}
 
 	public static boolean isVoidTotemOrTotem(ItemStack stack) {
@@ -80,8 +83,8 @@ public class ModUtils {
 				foundValidStack = true;
 			} else if (VoidTotemFabric.CONFIG.USE_TOTEM_FROM_INVENTORY) { // totems in the
 				// player inv used (config)
-				for (int i = 0; i < player.inventory.size(); i++) { // for each player inventory slot
-					ItemStack stack = player.inventory.getStack(i);
+				for (int i = 0; i < player.getInventory().size(); i++) { // for each player inventory slot
+					ItemStack stack = player.getInventory().getStack(i);
 					if (ModUtils.isVoidTotemOrTotem(stack)) { // is valid item
 						itemstack = ModUtils.copyAndRemoveItemStack(stack, player);
 						foundValidStack = true;
@@ -89,7 +92,7 @@ public class ModUtils {
 					}
 				}
 			} else {
-				if (FabricLoader.getInstance().isModLoaded(ModConstants.CURIOS_MOD_ID)) { // curios api is loaded
+				if (FabricLoader.getInstance().isModLoaded(ModConstants.TRINKETS_MOD_ID)) { // curios api is loaded
 					ItemStack curiosVoidTotemStack = ModUtils.findCuriosItem(VoidTotemFabric.VOID_TOTEM_ITEM, player);
 					ItemStack curiosVanillaTotemStack = VoidTotemFabric.CONFIG.ALLOW_TOTEM_OF_UNDYING
 							? ModUtils.findCuriosItem(Items.TOTEM_OF_UNDYING, player)
@@ -151,7 +154,7 @@ public class ModUtils {
 
 				PacketByteBuf buf = PacketByteBufs.create();
 				buf.writeItemStack(itemstack);
-				buf.writeInt(player.getEntityId());
+				buf.writeInt(player.getId());
 				ServerPlayNetworking.send(player, ModConstants.IDENTIFIER_TOTEM_EFFECT_PACKET, buf);
 				for (ServerPlayerEntity player2 : PlayerLookup.tracking((ServerWorld) player.world,
 						player.getBlockPos())) {
