@@ -12,8 +12,8 @@
 		"voidtotem-1.15.2-1.0.0" : "Initial release for 1.15.2"
 	},
   	"promos" : {
-    	"1.16.5-latest" : "voidtotem-1.16.5-1.4.0",
-    	"1.16.5-recommended" : "voidtotem-1.16.5-1.4.0",
+    		"1.16.5-latest" : "voidtotem-1.16.5-1.4.0",
+    		"1.16.5-recommended" : "voidtotem-1.16.5-1.4.0",
 		"1.15.2-latest" : "voidtotem-1.15.2-1.0.0",
 		"1.15.2-recommended" : "voidtotem-1.15.2-1.0.0"
 	}
