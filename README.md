@@ -1,6 +1,6 @@
-[![Curse Forge Project](http://cf.way2muchnoise.eu/versions/voidtotem-fabric.svg)](https://www.curseforge.com/minecraft/mc-mods/voidtotem-fabric/)
-[![Download](http://cf.way2muchnoise.eu/full_voidtotem-fabric_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/voidtotem-fabric/files/)
-[![Lines of Code](https://tokei.rs/b1/github/affehund/voidtotem?category=code)](https://github.com/Affehund/voidtotem)
+[![Curse Forge Project](http://cf.way2muchnoise.eu/versions/For%20Minecraft_456137_all.svg)](https://www.curseforge.com/minecraft/mc-mods/voidtotem-fabric/)
+[![Download](http://cf.way2muchnoise.eu/full_456137_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/voidtotem-fabric/files/)
+[![Lines of Code](https://tokei.rs/b1/github/Affehund/VoidTotem?category=code)](https://github.com/Affehund/VoidTotem)
 
 # VoidTotem
  A mod that adds a totem that prevents you from dying in the void.
