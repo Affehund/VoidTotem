@@ -9,7 +9,7 @@
 		"voidtotem-1.16.5-1.4.0" : "Changes:\n- better teleportation by saving the last block pos to nbt\n\nsmall fixes and tweaks"
 	},
 	"1.15.2" : {
-		"voidtotem-1.15.2-1.0.0" : "Initial release"
+		"voidtotem-1.15.2-1.0.0" : "Initial release for 1.15.2"
 	},
   	"promos" : {
     	"1.16.5-latest" : "voidtotem-1.16.5-1.4.0",
