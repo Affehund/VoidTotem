@@ -1,5 +1,5 @@
 modLoader="javafml" #mandatory
-loaderVersion="[34,)" #mandatory
+loaderVersion="[31,)" #mandatory
 
 license="GNU GPLv3"
 issueTrackerURL="https://github.com/Affehund/VoidTotem/issues" #optional
@@ -12,4 +12,3 @@ version="${file.jarVersion}" #mandatory
 displayName="Void Totem" #mandatory
 updateJSONURL="https://raw.githubusercontent.com/Affehund/VoidTotem/main/update.json" #optional
 description='''A mod that adds a totem that prevents you from dying in the void.'''
-

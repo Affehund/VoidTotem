@@ -43,7 +43,7 @@ public class PacketHandler {
 	 * @param player  ServerPlayerEntity
 	 */
 	public static <MSG> void sendToPlayer(MSG message, ServerPlayerEntity player) {
-		MOD_CHANNEL.sendTo(message, player.connection.getConnection(), NetworkDirection.PLAY_TO_CLIENT);
+		MOD_CHANNEL.sendTo(message, player.connection.netManager, NetworkDirection.PLAY_TO_CLIENT);
 	}
 
 	/**

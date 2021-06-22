@@ -1,15 +1,13 @@
 package com.affehund.voidtotem.core;
 
-import org.apache.commons.lang3.tuple.ImmutableTriple;
-
 import com.affehund.voidtotem.ModConstants;
-
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.ModList;
-import top.theillusivec4.curios.api.CuriosApi;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import top.theillusivec4.curios.api.CuriosAPI;
 
 /**
  * A class with some utilities methods for the mod.
@@ -34,12 +32,11 @@ public class ModUtils {
 	 * @apiNote only use if the curios mod is loaded @see ModUtils#isModLoaded
 	 * 
 	 * @param item   Item
-	 * @param living LivingEntity
+	 * @param livingEntity LivingEntity
 	 * @return an ItemStack with a given item.
 	 */
-	public static ItemStack findCuriosItem(Item item, LivingEntity livingItem) {
-		return CuriosApi.getCuriosHelper().findEquippedCurio(item, livingItem).map(ImmutableTriple::getRight)
-				.orElse(ItemStack.EMPTY);
+	public static ItemStack findCuriosItem(Item item, LivingEntity livingEntity) {
+		return CuriosAPI.getCurioEquipped(item, livingEntity).map(ImmutableTriple::getRight).orElse(ItemStack.EMPTY);
 	}
 
 	/**
