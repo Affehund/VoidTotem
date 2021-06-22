@@ -81,10 +81,10 @@ public class ModDataGeneration {
 				add("_comment", "Translation (de_de) by Affehund");
 				add(VoidTotem.VOID_TOTEM_ITEM.get(), "Totem der Unsterblichkeit in der Leere");
 				add(ModConstants.TOOLTIP_VOID_TOTEM,
-						"Lege diese Totem in deine Haupt-/Nebenhand, um zu verhindern, dass du stirbst, wenn du in die Leere fällst.");
+						"Lege diese Totem in deine Haupt-/Nebenhand, um zu verhindern, dass du stirbst, wenn du in die Leere fï¿½llst.");
 				add(ModConstants.ADVANCEMENT_VOID_TOTEM_TITLE, "Post mortem 2");
 				add(ModConstants.ADVANCEMENT_VOID_TOTEM_DESC,
-						"Benutze ein Totem der Unsterblichkeit in der Leere, um dem Tod, wenn du in die Leere fällst, von der Schippe zu springen");
+						"Benutze ein Totem der Unsterblichkeit in der Leere, um dem Tod, wenn du in die Leere fï¿½llst, von der Schippe zu springen");
 				break;
 			case "en_us":
 				add("_comment", "Translation (en_us) by Affehund");
@@ -155,7 +155,7 @@ public class ModDataGeneration {
 		}
 
 		@Override
-		protected void registerRecipes(Consumer<IFinishedRecipe> consumer) {
+		protected void buildShapelessRecipes(Consumer<IFinishedRecipe> consumer) {
 			/**
 			 * The void totem is created with a shaped recipe:
 			 * 
@@ -165,13 +165,13 @@ public class ModDataGeneration {
 			 * 
 			 * null, eye of ender, null
 			 */
-			ShapedRecipeBuilder.shapedRecipe(VoidTotem.VOID_TOTEM_ITEM.get()).patternLine("cec").patternLine("dtd")
-					.patternLine(" e ").key('c', Items.CHORUS_FRUIT).key('e', Items.ENDER_EYE).key('d', Items.EMERALD)
-					.key('t', Items.TOTEM_OF_UNDYING).addCriterion("has_chorus_fruit", hasItem(Items.CHORUS_FRUIT))
-					.addCriterion("has_ender_eye", hasItem(Items.ENDER_EYE))
-					.addCriterion("has_emerald", hasItem(Items.EMERALD))
-					.addCriterion("has_totem", hasItem(Items.TOTEM_OF_UNDYING)).build(consumer);
+			ShapedRecipeBuilder.shaped(VoidTotem.VOID_TOTEM_ITEM.get()).pattern("cec").pattern("dtd").pattern(" e ")
+					.define('c', Items.CHORUS_FRUIT).define('e', Items.ENDER_EYE).define('d', Items.EMERALD)
+					.define('t', Items.TOTEM_OF_UNDYING).unlockedBy("has_chorus_fruit", has(Items.CHORUS_FRUIT))
+					.unlockedBy("has_ender_eye", has(Items.ENDER_EYE)).unlockedBy("has_emerald", has(Items.EMERALD))
+					.unlockedBy("has_totem", has(Items.TOTEM_OF_UNDYING)).save(consumer);
 		}
+
 	}
 
 	/**
@@ -206,8 +206,8 @@ public class ModDataGeneration {
 		}
 
 		@Override
-		protected void registerTags() {
-			this.getOrCreateBuilder(CURIOS_CHARM).add(VoidTotem.VOID_TOTEM_ITEM.get()).add(Items.TOTEM_OF_UNDYING);
+		protected void addTags() {
+			this.tag(CURIOS_CHARM).add(VoidTotem.VOID_TOTEM_ITEM.get()).add(Items.TOTEM_OF_UNDYING);
 		}
 	}
 
@@ -221,7 +221,7 @@ public class ModDataGeneration {
 	 *         (the mod id).
 	 */
 	private static ITag.INamedTag<Item> modTag(String name, String modID) {
-		return ItemTags.makeWrapperTag(modID + ":" + name);
+		return ItemTags.bind(modID + ":" + name);
 	}
 
 	/**
@@ -240,26 +240,26 @@ public class ModDataGeneration {
 		}
 
 		private void registerAdvancements(Consumer<Advancement> consumer) {
-			Advancement.Builder.builder()
-					.withParent(Advancement.Builder.builder()
+			Advancement.Builder.advancement()
+					.parent(Advancement.Builder.advancement()
 							.build(new ResourceLocation(ModConstants.ADVANCEMENT_ADVENTURE_TOTEM_PATH)))
-					.withDisplay(VoidTotem.VOID_TOTEM_ITEM.get(),
+					.display(VoidTotem.VOID_TOTEM_ITEM.get(),
 							new TranslationTextComponent(ModConstants.ADVANCEMENT_VOID_TOTEM_TITLE),
 							new TranslationTextComponent(ModConstants.ADVANCEMENT_VOID_TOTEM_DESC),
 							(ResourceLocation) null, FrameType.GOAL, true, true, false)
-					.withCriterion("used_totem", UsedTotemTrigger.Instance.usedTotem(VoidTotem.VOID_TOTEM_ITEM.get()))
-					.register(consumer, ModConstants.ADVANCEMENT_ADVENTURE_VOID_TOTEM_PATH);
+					.addCriterion("used_totem", UsedTotemTrigger.Instance.usedTotem(VoidTotem.VOID_TOTEM_ITEM.get()))
+					.save(consumer, ModConstants.ADVANCEMENT_ADVENTURE_VOID_TOTEM_PATH);
 		}
 
 		@Override
-		public void act(DirectoryCache cache) throws IOException {
+		public void run(DirectoryCache cache) throws IOException {
 			Path outputFolder = this.generator.getOutputFolder();
 			Consumer<Advancement> consumer = (advancement) -> {
 
 				Path path = outputFolder.resolve("data/" + advancement.getId().getNamespace() + "/advancements/"
 						+ advancement.getId().getPath() + ".json");
 				try {
-					IDataProvider.save(GSON, cache, advancement.copy().serialize(), path);
+					IDataProvider.save(GSON, cache, advancement.deconstruct().serializeToJson(), path);
 					DATAGEN_LOGGER.debug("Creating advancement {}", advancement.getId());
 				} catch (IOException e) {
 					DATAGEN_LOGGER.error("Couldn't create advancement {}", path, e);
@@ -284,14 +284,14 @@ public class ModDataGeneration {
 		}
 
 		@Override
-		public void act(DirectoryCache cache) {
+		public void run(DirectoryCache cache) {
 			Map<ResourceLocation, LootTable> tables = new HashMap<>();
 
-			LootPool.Builder voidtotem_loot_builder = LootPool.builder().name("main")
-					.acceptCondition(RandomChance.builder(0.33F)).rolls(ConstantRange.of(1))
-					.addEntry(ItemLootEntry.builder(VoidTotem.VOID_TOTEM_ITEM.get()).weight(1));
+			LootPool.Builder voidtotem_loot_builder = LootPool.lootPool().name("main")
+					.when(RandomChance.randomChance(0.33F)).setRolls(ConstantRange.exactly(1))
+					.add(ItemLootEntry.lootTableItem(VoidTotem.VOID_TOTEM_ITEM.get()).setWeight(1));
 			tables.put(ModConstants.LOCATION_END_CITY_TREASURE_INJECTION,
-					LootTable.builder().addLootPool(voidtotem_loot_builder).build());
+					LootTable.lootTable().withPool(voidtotem_loot_builder).build());
 
 			this.writeLootTables(cache, tables);
 		}
@@ -302,7 +302,7 @@ public class ModDataGeneration {
 				Path path = outputFolder
 						.resolve("data/" + key.getNamespace() + "/loot_tables/" + key.getPath() + ".json");
 				try {
-					IDataProvider.save(GSON, cache, LootTableManager.toJson(lootTable), path);
+					IDataProvider.save(GSON, cache, LootTableManager.serialize(lootTable), path);
 					DATAGEN_LOGGER.debug("Creating loot table {}", key.getPath());
 				} catch (IOException e) {
 					DATAGEN_LOGGER.error("Couldn't create loot table {}", key.getPath(), e);

@@ -27,8 +27,8 @@ public class TotemEffectPacket {
 
 	public TotemEffectPacket(PacketBuffer buf) {
 		Minecraft mc = Minecraft.getInstance();
-		this.itemStack = buf.readItemStack();
-		this.entity = mc.world.getEntityByID(buf.readInt());
+		this.itemStack = buf.readItem();
+		this.entity = mc.level.getEntity(buf.readInt());
 	}
 
 	public TotemEffectPacket(ItemStack itemStack, Entity entity) {
@@ -42,8 +42,8 @@ public class TotemEffectPacket {
 	 * @param buf PacketBuffer
 	 */
 	public void encode(PacketBuffer buf) {
-		buf.writeItemStack(itemStack);
-		buf.writeInt(entity.getEntityId());
+		buf.writeItem(itemStack);
+		buf.writeInt(entity.getId());
 	}
 
 	/**

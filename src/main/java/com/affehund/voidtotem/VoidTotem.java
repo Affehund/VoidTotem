@@ -100,7 +100,7 @@ public class VoidTotem {
 
 	// the void totem item
 	public static final RegistryObject<Item> VOID_TOTEM_ITEM = ITEMS.register(ModConstants.ITEM_VOID_TOTEM,
-			() -> new Item(new Item.Properties().maxStackSize(1).group(ItemGroup.COMBAT).rarity(Rarity.UNCOMMON)));
+			() -> new Item(new Item.Properties().stacksTo(1).tab(ItemGroup.TAB_COMBAT).rarity(Rarity.UNCOMMON)));
 
 	/**
 	 * Used to add the void totem to the end city loot treasure.
@@ -114,10 +114,9 @@ public class VoidTotem {
 			if (event.getName().equals(ModConstants.LOCATION_END_CITY_TREASURE)) {
 				LOGGER.debug("Injecting loottable {} from {}", ModConstants.LOCATION_END_CITY_TREASURE.toString(),
 						ModConstants.MOD_ID);
-				event.getTable()
-						.addPool(LootPool.builder()
-								.addEntry(TableLootEntry.builder(ModConstants.LOCATION_END_CITY_TREASURE_INJECTION))
-								.name(ModConstants.MOD_ID + "_injection").build());
+				event.getTable().addPool(LootPool.lootPool()
+						.add(TableLootEntry.lootTableReference(ModConstants.LOCATION_END_CITY_TREASURE_INJECTION))
+						.name(ModConstants.MOD_ID + "_injection").build());
 			}
 		}
 	}
@@ -171,8 +170,8 @@ public class VoidTotem {
 		ItemStack stack = event.getItemStack();
 		if (stack.getItem() == VoidTotem.VOID_TOTEM_ITEM.get()
 				&& VoidTotemConfig.COMMON_CONFIG.SHOW_TOTEM_TOOLTIP.get()) {
-			event.getToolTip().add(
-					new TranslationTextComponent(ModConstants.TOOLTIP_VOID_TOTEM).mergeStyle(TextFormatting.GREEN));
+			event.getToolTip()
+					.add(new TranslationTextComponent(ModConstants.TOOLTIP_VOID_TOTEM).withStyle(TextFormatting.GREEN));
 		}
 	}
 
@@ -187,20 +186,20 @@ public class VoidTotem {
 			if (event.player instanceof ServerPlayerEntity) {
 				ServerPlayerEntity player = (ServerPlayerEntity) event.player;
 
-				BlockPos pos = player.getPosition();
+				BlockPos pos = player.blockPosition();
 
 				long lastPosLong = player.getPersistentData().getLong(ModConstants.LAST_BLOCK_POS);
-				BlockPos lastPos = BlockPos.fromLong(lastPosLong);
-				if (player.world.getBlockState(pos.down()).isSolid()) {
+				BlockPos lastPos = BlockPos.of(lastPosLong);
+				if (player.level.getBlockState(pos.below()).canOcclude()) {
 					if (!lastPos.equals(pos)) {
-						player.getPersistentData().putLong(ModConstants.LAST_BLOCK_POS, pos.toLong());
+						player.getPersistentData().putLong(ModConstants.LAST_BLOCK_POS, pos.asLong());
 					}
 				}
 
 				if (player.getPersistentData().getBoolean(ModConstants.NBT_TAG)) {
-					player.connection.floatingTickCount = 0;
-					if (player.isInWater() || player.abilities.isFlying || player.abilities.allowFlying
-							|| player.world.getBlockState(pos).getBlock() == Blocks.COBWEB) {
+					player.connection.aboveGroundTickCount = 0;
+					if (player.isInWater() || player.abilities.flying || player.abilities.mayfly
+							|| player.level.getBlockState(pos).getBlock() == Blocks.COBWEB) {
 						player.getPersistentData().putBoolean(ModConstants.NBT_TAG, false);
 					}
 				}
@@ -251,23 +250,23 @@ public class VoidTotem {
 	 * @param event LivingHurtEvent
 	 */
 	private void livingHurt(final LivingHurtEvent event) {
-		if (event.getEntity().world.isRemote()) // is client
+		if (event.getEntity().level.isClientSide()) // is client
 			return;
 		if (VoidTotemConfig.COMMON_CONFIG.BLACKLISTED_DIMENSIONS.get()
-				.contains(event.getEntityLiving().world.getDimensionKey().getLocation().toString())) // dim on blacklist
+				.contains(event.getEntityLiving().level.dimension().location().toString())) // dim on blacklist
 			return;
 		// no valid damage
 		if (event.getSource() != DamageSource.OUT_OF_WORLD)
 			return;
 		// important: player has to be below y=-64 (else /kill command wouldn't work
 		// when totem equiped)
-		if (event.getEntityLiving().getPosY() > -64)
+		if (event.getEntityLiving().getY() > -64)
 			return;
 		if (event.getAmount() < event.getEntityLiving().getHealth()) // only run if player about to die
 			return;
 		if (event.getEntityLiving() instanceof ServerPlayerEntity) { // is server player entity
 			ServerPlayerEntity player = (ServerPlayerEntity) event.getEntityLiving();
-			player.connection.floatingTickCount = 0;
+			player.connection.aboveGroundTickCount = 0;
 
 			ItemStack itemstack = null;
 			boolean foundValidStack = false;
@@ -277,8 +276,8 @@ public class VoidTotem {
 				foundValidStack = true;
 			} else if (VoidTotemConfig.COMMON_CONFIG.USE_TOTEM_FROM_INVENTORY.get()) { // totems in the player inv used
 																						// (config)
-				for (int i = 0; i < player.inventory.getSizeInventory(); i++) { // for each player inventory slot
-					ItemStack stack = player.inventory.getStackInSlot(i);
+				for (int i = 0; i < player.inventory.getContainerSize(); i++) { // for each player inventory slot
+					ItemStack stack = player.inventory.getItem(i);
 					if (isVoidTotemOrTotem(stack)) { // is valid item
 						itemstack = copyAndRemoveItemStack(stack, player);
 						foundValidStack = true;
@@ -302,7 +301,7 @@ public class VoidTotem {
 
 				if (!foundValidStack) {
 					for (Hand hand : Hand.values()) { // for each hand (main-/offhand)
-						ItemStack stack = player.getHeldItem(hand);
+						ItemStack stack = player.getItemInHand(hand);
 						if (isVoidTotemOrTotem(stack)) { // is valid item
 							itemstack = copyAndRemoveItemStack(stack, player);
 							foundValidStack = true;
@@ -313,35 +312,35 @@ public class VoidTotem {
 			}
 
 			if (itemstack != null && foundValidStack) { // check if stack isn't null and if there
-				if (player.connection.targetPos != null) // wants to teleport
+				if (player.connection.awaitingPositionFromClient != null) // wants to teleport
 					return;
-				if (player.isBeingRidden()) { // has passenger and remove it
-					player.removePassengers();
+				if (player.isVehicle()) { // has passenger and remove it
+					player.ejectPassengers();
 				}
 				player.stopRiding();
 
 				long lastBlockPos = player.getPersistentData().getLong(ModConstants.LAST_BLOCK_POS); // get last pos
-				BlockPos teleportPos = BlockPos.fromLong(lastBlockPos); // convert to block pos
+				BlockPos teleportPos = BlockPos.of(lastBlockPos); // convert to block pos
 
 				boolean teleportedToBlock = false;
 
 				for (int i = 0; i < 16; i++) { // try 16 times to teleport the player to a good spot
 
-					double x = teleportPos.getX() + (player.getRNG().nextDouble() - 0.5D) * 4.0D;
-					double y = MathHelper.clamp(player.getRNG().nextInt() * player.world.getHeight(), 0.0D,
-							player.world.getHeight() - 1);
-					double z = teleportPos.getZ() + (player.getRNG().nextDouble() - 0.5D) * 4.0;
+					double x = teleportPos.getX() + (player.getRandom().nextDouble() - 0.5D) * 4.0D;
+					double y = MathHelper.clamp(player.getRandom().nextInt() * player.level.getHeight(), 0.0D,
+							player.level.getHeight() - 1);
+					double z = teleportPos.getZ() + (player.getRandom().nextDouble() - 0.5D) * 4.0;
 
-					if (player.attemptTeleport(x, y, z, true)) { // if can teleport break
+					if (player.randomTeleport(x, y, z, true)) { // if can teleport break
 						teleportedToBlock = true;
 						break;
 					}
 				}
 
 				if (!teleportedToBlock) { // if can't teleport to a block teleport to height set in config
-					player.setPositionAndUpdate(teleportPos.getX(), VoidTotemConfig.COMMON_CONFIG.TELEPORT_HEIGHT.get(),
+					player.teleportTo(teleportPos.getX(), VoidTotemConfig.COMMON_CONFIG.TELEPORT_HEIGHT.get(),
 							teleportPos.getZ());
-					player.connection.floatingTickCount = 0;
+					player.connection.aboveGroundTickCount = 0;
 				}
 
 				event.setCanceled(true);
@@ -384,7 +383,7 @@ public class VoidTotem {
 	private static ItemStack copyAndRemoveItemStack(ItemStack itemStack, ServerPlayerEntity player) {
 		ItemStack itemStackCopy = itemStack.copy();
 		if (!itemStack.isEmpty()) { // add stats if stack isn't empty / null
-			player.addStat(Stats.ITEM_USED.get(itemStack.getItem()));
+			player.awardStat(Stats.ITEM_USED.get(itemStack.getItem()));
 			CriteriaTriggers.USED_TOTEM.trigger(player, itemStack);
 		}
 		itemStack.shrink(1);
@@ -400,7 +399,7 @@ public class VoidTotem {
 		if (event.getEntity() instanceof ServerPlayerEntity) {
 			ServerPlayerEntity player = (ServerPlayerEntity) event.getEntity();
 			if (player.getPersistentData().getBoolean(ModConstants.NBT_TAG)) { // if has tag
-				player.connection.floatingTickCount = 0;
+				player.connection.aboveGroundTickCount = 0;
 				event.setDamageMultiplier(0f); // set damage multiplier to 0 => no damage
 				player.getPersistentData().putBoolean(ModConstants.NBT_TAG, false); // remove tag
 				event.setCanceled(true);
@@ -417,9 +416,9 @@ public class VoidTotem {
 	@OnlyIn(Dist.CLIENT)
 	public void playActivateAnimation(ItemStack stack, Entity entity) {
 		Minecraft mc = Minecraft.getInstance();
-		mc.particles.emitParticleAtEntity(entity, ParticleTypes.TOTEM_OF_UNDYING, 30); // particles
-		mc.world.playSound(entity.getPosX(), entity.getPosY(), entity.getPosZ(), SoundEvents.ITEM_TOTEM_USE,
-				entity.getSoundCategory(), 1.0F, 1.0F, false); // sound
+		mc.particleEngine.createTrackingEmitter(entity, ParticleTypes.TOTEM_OF_UNDYING, 30); // particles
+		mc.level.playLocalSound(entity.getX(), entity.getY(), entity.getZ(), SoundEvents.TOTEM_USE,
+				entity.getSoundSource(), 1.0F, 1.0F, false); // sound
 
 		if (entity == mc.player) {
 			mc.gameRenderer.displayItemActivation(stack); // animation
