@@ -47,6 +47,9 @@ import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.common.data.LanguageProvider;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 /**
  * A class to create the jsons for our mod.
  * 
@@ -62,14 +65,14 @@ public class ModDataGeneration {
 	/**
 	 * A sub class for the creation of the language files.
 	 * 
-	 * @see LanguageProvider.class
+	 * @see LanguageProvider
 	 * 
 	 * @author Affehund
 	 *
 	 */
 	public static final class LanguageGen extends LanguageProvider {
 
-		public LanguageGen(DataGenerator gen, String modid, String locale) {
+		public LanguageGen(DataGenerator gen, String locale) {
 			super(gen, ModConstants.MOD_ID, locale);
 		}
 
@@ -102,7 +105,7 @@ public class ModDataGeneration {
 	/**
 	 * A sub class to create the item model for the void totem.
 	 * 
-	 * @see ItemModelProvider.class
+	 * @see ItemModelProvider
 	 * 
 	 * @author Affehund
 	 *
@@ -144,7 +147,7 @@ public class ModDataGeneration {
 	/**
 	 * A sub class to create the void totem recipe.
 	 * 
-	 * @see RecipeProvider.class
+	 * @see RecipeProvider
 	 * 
 	 * @author Affehund
 	 *
@@ -155,7 +158,7 @@ public class ModDataGeneration {
 		}
 
 		@Override
-		protected void buildShapelessRecipes(Consumer<IFinishedRecipe> consumer) {
+		protected void buildShapelessRecipes(@Nonnull Consumer<IFinishedRecipe> consumer) {
 			/**
 			 * The void totem is created with a shaped recipe:
 			 * 
@@ -178,8 +181,8 @@ public class ModDataGeneration {
 	 * A sub class with that block tags could be generated, only needed for the
 	 * ItemTagsGen.
 	 * 
-	 * @see BlockTagsProvider.class
-	 * @see ItemTagsGen.class
+	 * @see BlockTagsProvider
+	 * @see ItemTagsGen
 	 * 
 	 * @author Affehund
 	 *
@@ -227,7 +230,7 @@ public class ModDataGeneration {
 	/**
 	 * A sub class to create the advancement when you use the totem of void undying.
 	 * 
-	 * @see AdvancementProvider.class
+	 * @see AdvancementProvider
 	 * @author Affehund
 	 *
 	 */
@@ -252,7 +255,7 @@ public class ModDataGeneration {
 		}
 
 		@Override
-		public void run(DirectoryCache cache) throws IOException {
+		public void run(@Nullable DirectoryCache cache) throws IOException {
 			Path outputFolder = this.generator.getOutputFolder();
 			Consumer<Advancement> consumer = (advancement) -> {
 
@@ -284,7 +287,7 @@ public class ModDataGeneration {
 		}
 
 		@Override
-		public void run(DirectoryCache cache) {
+		public void run(@Nonnull DirectoryCache cache) {
 			Map<ResourceLocation, LootTable> tables = new HashMap<>();
 
 			LootPool.Builder voidtotem_loot_builder = LootPool.lootPool().name("main")

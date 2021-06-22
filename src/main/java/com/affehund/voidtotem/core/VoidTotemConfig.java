@@ -44,7 +44,8 @@ public class VoidTotemConfig {
 					.define("allow_totem_of_undying", false);
 			BLACKLISTED_DIMENSIONS = builder.comment(
 					"This adds dimensions to a blacklist where you die if you fall into the void. Example: \"minecraft:overworld\".")
-					.define("blacklisted_dimensions", new ArrayList<String>());
+					.define("blacklisted_dimensions",
+							new ArrayList<String>());
 			NEEDS_TOTEM = builder
 					.comment("This sets whether you need a totem to prevent death when falling into the void.")
 					.define("needs_totem", true);

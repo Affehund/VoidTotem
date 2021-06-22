@@ -152,8 +152,8 @@ public class VoidTotem {
 			generator.addProvider(new ModDataGeneration.LootTableGen(generator));
 		}
 		if (event.includeClient()) { // client side generators
-			generator.addProvider(new ModDataGeneration.LanguageGen(generator, ModConstants.MOD_ID, "de_de"));
-			generator.addProvider(new ModDataGeneration.LanguageGen(generator, ModConstants.MOD_ID, "en_us"));
+			generator.addProvider(new ModDataGeneration.LanguageGen(generator, "de_de"));
+			generator.addProvider(new ModDataGeneration.LanguageGen(generator,  "en_us"));
 			generator.addProvider(
 					new ModDataGeneration.ItemModelGen(generator, ModConstants.MOD_ID, existingFileHelper));
 		}
