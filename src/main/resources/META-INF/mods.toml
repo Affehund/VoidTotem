@@ -1,0 +1,35 @@
+modLoader="javafml" #mandatory
+loaderVersion="[38,)" #mandatory This is typically bumped every Minecraft version by Forge. See our download page for lists of versions.
+license="GNU GPLv3"
+issueTrackerURL="https://github.com/Affehund/VoidTotem/issues" #optional
+displayURL="https://www.curseforge.com/minecraft/mc-mods/voidtotem" #optional
+logoFile="logo.png" #optional
+logoBlur=false
+authors="Affehund" #optional
+[[mods]] #mandatory
+modId="voidtotem" #mandatory
+version="${file.jarVersion}" #mandatory
+displayName="Void Totem" #mandatory
+description='''A mod that adds a totem that prevents you from dying in the void.'''
+
+
+# A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
+[[dependencies.voidtotem]] #optional
+   # the modid of the dependency
+   modId="forge" #mandatory
+   # Does this dependency have to exist - if not, ordering below must be specified
+   mandatory=true #mandatory
+   # The version range of the dependency
+   versionRange="[38,)" #mandatory
+   # An ordering relationship for the dependency - BEFORE or AFTER required if the relationship is not mandatory
+   ordering="NONE"
+   # Side this dependency is applied on - BOTH, CLIENT or SERVER
+   side="BOTH"
+# Here's another dependency
+[[dependencies.voidtotem]]
+   modId="minecraft"
+   mandatory=true
+   # This version range declares a minimum of the current minecraft version up to but not including the next major version
+   versionRange="[1.18,1.19)"
+   ordering="NONE"
+   side="BOTH"
