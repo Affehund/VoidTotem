@@ -1,0 +1,3 @@
+accessWidener	v1	named
+accessible    field    net/minecraft/server/network/ServerPlayNetworkHandler    floatingTicks    I
+accessible    field    net/minecraft/server/network/ServerPlayNetworkHandler    requestedTeleportPos    Lnet/minecraft/util/math/Vec3d;
