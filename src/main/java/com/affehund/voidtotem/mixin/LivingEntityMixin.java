@@ -26,7 +26,6 @@ public class LivingEntityMixin {
 		}
 	}
 
-	// Strg + K + C / U
 	@Inject(method = "handleFallDamage", at = @At("HEAD"), cancellable = true)
 	private void handleFallDamage(float fallDistance, float damageMultiplier, DamageSource damageSource, CallbackInfoReturnable<Boolean> info) {
 		LivingEntity livingEntity = (LivingEntity) (Object) this;
@@ -35,7 +34,6 @@ public class LivingEntityMixin {
 			if (!player.world.isClient) {
 				if (player.getScoreboardTags().contains(ModConstants.NBT_TAG)) { // if has tag
 					player.networkHandler.floatingTicks = 0;
-					damageMultiplier = 0;
 					player.removeScoreboardTag(ModConstants.NBT_TAG); // remove tag
 					info.cancel();
 				}

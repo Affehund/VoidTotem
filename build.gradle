@@ -25,10 +25,6 @@ repositories {
 		name = "Ladysnake Libs"
 		url = "https://ladysnake.jfrog.io/artifactory/mods"
 	}
-	
-	// maven {	
-	// 	url = 'https://maven.fabricmc.net/io/github/prospector/modmenu/'
-	// }
 }
 
 minecraft {
@@ -42,11 +38,6 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	modImplementation "dev.emi:trinkets:${trinkets_version}"
-	
-	//Mod Menu
-    // modImplementation("io.github.prospector:modmenu:1.14.6+build.31") {
-    //  exclude module: 'fabric-api'
-    //}
 }
 
 processResources {

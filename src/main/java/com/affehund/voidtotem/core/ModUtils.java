@@ -47,12 +47,8 @@ public class ModUtils {
 	public static boolean isVoidTotemOrTotem(ItemStack stack) {
 		Item item = stack.getItem();
 		boolean isVoidTotem = item == VoidTotemFabric.VOID_TOTEM_ITEM;
-		boolean isTotemOfUndying = VoidTotemFabric.CONFIG.ALLOW_TOTEM_OF_UNDYING ? item == Items.TOTEM_OF_UNDYING
-				: false;
-		if (isVoidTotem || isTotemOfUndying) {
-			return true;
-		}
-		return false;
+		boolean isTotemOfUndying = VoidTotemFabric.CONFIG.ALLOW_TOTEM_OF_UNDYING && item == Items.TOTEM_OF_UNDYING;
+		return isVoidTotem || isTotemOfUndying;
 	}
 
 	public static ItemStack copyAndRemoveItemStack(ItemStack itemStack, ServerPlayerEntity player) {
@@ -69,10 +65,9 @@ public class ModUtils {
 		if (VoidTotemFabric.CONFIG.BLACKLISTED_DIMENSIONS
 				.contains(livingEntity.world.getRegistryKey().getValue().toString())) // dim on blacklist
 			return false;
-		if (source != DamageSource.OUT_OF_WORLD && livingEntity.getX() > -64)
+		if (source != DamageSource.OUT_OF_WORLD && livingEntity.getY() > -64)
 			return false;
-		if (livingEntity instanceof ServerPlayerEntity) {
-			ServerPlayerEntity player = (ServerPlayerEntity) livingEntity;
+		if (livingEntity instanceof ServerPlayerEntity player) {
 			player.networkHandler.floatingTicks = 0;
 
 			ItemStack itemstack = null;
@@ -80,14 +75,12 @@ public class ModUtils {
 
 			if (!VoidTotemFabric.CONFIG.NEEDS_TOTEM) { // totem is needed (config)
 				itemstack = ItemStack.EMPTY;
-				foundValidStack = true;
 			} else if (VoidTotemFabric.CONFIG.USE_TOTEM_FROM_INVENTORY) { // totems in the
 				// player inv used (config)
 				for (int i = 0; i < player.getInventory().size(); i++) { // for each player inventory slot
 					ItemStack stack = player.getInventory().getStack(i);
 					if (ModUtils.isVoidTotemOrTotem(stack)) { // is valid item
 						itemstack = ModUtils.copyAndRemoveItemStack(stack, player);
-						foundValidStack = true;
 						break;
 					}
 				}
@@ -111,14 +104,13 @@ public class ModUtils {
 						ItemStack stack = player.getStackInHand(hand);
 						if (ModUtils.isVoidTotemOrTotem(stack)) { // is valid item
 							itemstack = ModUtils.copyAndRemoveItemStack(stack, player);
-							foundValidStack = true;
 							break;
 						}
 					}
 				}
 			}
 
-			if (itemstack != null && foundValidStack) { // check if stack isn't null and if there
+			if (null != itemstack) { // check if stack isn't null and if there
 				if (player.networkHandler.requestedTeleportPos != null) // wants to teleport
 					return false;
 
@@ -170,6 +162,7 @@ public class ModUtils {
 	public static void playActivateAnimation(ItemStack stack, Entity entity) {
 		MinecraftClient mc = MinecraftClient.getInstance();
 		mc.particleManager.addEmitter(entity, ParticleTypes.TOTEM_OF_UNDYING, 30); // particles
+		assert mc.world != null;
 		mc.world.playSound(entity.getX(), entity.getY(), entity.getZ(), SoundEvents.ITEM_TOTEM_USE,
 				entity.getSoundCategory(), 1.0F, 1.0F, false); // sound
 		if (entity == mc.player) {

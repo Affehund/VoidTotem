@@ -13,10 +13,9 @@ public class ClientPacketHandler {
 		ClientPlayNetworking.registerGlobalReceiver(ModConstants.IDENTIFIER_TOTEM_EFFECT_PACKET,
 				(client, handler, buf, responseSender) -> {
 					ItemStack itemStack = buf.readItemStack();
+					assert client.world != null;
 					Entity entity = client.world.getEntityById(buf.readInt());
-					client.execute(() -> {
-						ModUtils.playActivateAnimation(itemStack, entity);
-					});
+					client.execute(() -> ModUtils.playActivateAnimation(itemStack, entity));
 				});
 	}
 }

@@ -34,7 +34,7 @@ public class VoidTotemConfig {
 	public VoidTotemConfig() {
 		this.ADD_END_CITY_TREASURE = true;
 		this.ALLOW_TOTEM_OF_UNDYING = false;
-		this.BLACKLISTED_DIMENSIONS = new ArrayList<String>();
+		this.BLACKLISTED_DIMENSIONS = new ArrayList<>();
 		this.NEEDS_TOTEM = true;
 		this.SHOW_TOTEM_TOOLTIP = true;
 		this.TELEPORT_HEIGHT = 320;
