@@ -38,7 +38,7 @@ public class VoidTotemConfig {
 		this.NEEDS_TOTEM = true;
 		this.SHOW_TOTEM_TOOLTIP = true;
 		this.TELEPORT_HEIGHT = 384;
-		this.USE_TOTEM_FROM_INVENTORY = true;
+		this.USE_TOTEM_FROM_INVENTORY = false;
 	}
 
 	public static VoidTotemConfig setup() {
