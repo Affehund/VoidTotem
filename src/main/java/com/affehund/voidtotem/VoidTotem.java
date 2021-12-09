@@ -124,7 +124,6 @@ public class VoidTotem {
                         }
                     };
 
-
                     @Nonnull
                     @Override
                     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
@@ -169,14 +168,14 @@ public class VoidTotem {
         }
     }
 
-    @OnlyIn(Dist.CLIENT)
-    @SubscribeEvent
-    public void tooltip(final ItemTooltipEvent event) {
-        ItemStack stack = event.getItemStack();
-        if (isVoidTotemOrTotem(stack)
-                && VoidTotemConfig.COMMON_CONFIG.SHOW_TOTEM_TOOLTIP.get()) {
-            event.getToolTip()
-                    .add(new TranslatableComponent(ModConstants.TOOLTIP_VOID_TOTEM).withStyle(ChatFormatting.GREEN));
+    private void livingFall(final LivingFallEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            if (player.getPersistentData().getBoolean(ModConstants.NBT_TAG)) { // if player has tag
+                player.connection.aboveGroundTickCount = 0;
+                event.setDamageMultiplier(0f); // set damage multiplier to 0 => no damage
+                player.getPersistentData().putBoolean(ModConstants.NBT_TAG, false); // remove tag
+                event.setCanceled(true);
+            }
         }
     }
 
@@ -206,67 +205,53 @@ public class VoidTotem {
     }
 
     private void livingHurt(final LivingHurtEvent event) {
-        if (event.getEntity().level.isClientSide()) // is client
-            return;
-        if (VoidTotemConfig.COMMON_CONFIG.BLACKLISTED_DIMENSIONS.get()
-                .contains(event.getEntityLiving().level.dimension().location().toString())) // dim on blacklist
-            return;
-        // no valid damage
-        if (event.getSource() != DamageSource.OUT_OF_WORLD)
-            return;
-        // important: player has to be below y=-64 (else /kill command wouldn't work
-        // when totem equipped)
-        if (event.getEntityLiving().getY() > -64)
-            return;
-        if (event.getAmount() < event.getEntityLiving().getHealth()) // only run if player about to die
-            return;
+        Entity entity = event.getEntity();
+        if (entity.level.isClientSide()) return;
+        if (VoidTotemConfig.COMMON_CONFIG.BLACKLISTED_DIMENSIONS.get().contains(entity.level.dimension().location().toString())) return;
+        if (event.getSource() != DamageSource.OUT_OF_WORLD || entity.getY() > -64) return;
+        if (event.getAmount() < event.getEntityLiving().getHealth()) return;
+
         if (event.getEntityLiving() instanceof ServerPlayer player) { // is server player entity
             player.connection.aboveGroundTickCount = 0;
 
             ItemStack itemstack = null;
-            boolean foundValidStack = false;
 
             if (!VoidTotemConfig.COMMON_CONFIG.NEEDS_TOTEM.get()) { // totem is needed (config)
                 itemstack = ItemStack.EMPTY;
-                foundValidStack = true;
-            } else if (VoidTotemConfig.COMMON_CONFIG.USE_TOTEM_FROM_INVENTORY.get()) { // totems in the player inv used
-                // (config)
-                for (int i = 0; i < player.getInventory().getContainerSize(); i++) { // for each player inventory slot
-                    ItemStack stack = player.getInventory().getItem(i);
-                    if (isVoidTotemOrTotem(stack)) { // is valid item
-                        itemstack = copyAndRemoveItemStack(stack, player);
-                        foundValidStack = true;
-                        break;
-                    }
-                }
-            } else {
-                if (ModUtils.isModLoaded(ModConstants.CURIOS_MOD_ID)) { // curios api is loaded
-                    ItemStack curiosVoidTotemStack = ModUtils.findCuriosItem(VoidTotem.VOID_TOTEM_ITEM.get(), player);
-                    ItemStack curiosVanillaTotemStack = VoidTotemConfig.COMMON_CONFIG.ALLOW_TOTEM_OF_UNDYING.get()
-                            ? ModUtils.findCuriosItem(Items.TOTEM_OF_UNDYING, player)
-                            : ItemStack.EMPTY;
-                    if (curiosVoidTotemStack != ItemStack.EMPTY) {
-                        itemstack = copyAndRemoveItemStack(curiosVoidTotemStack, player);
-                        foundValidStack = true;
-                    } else if (curiosVanillaTotemStack != ItemStack.EMPTY) {
-                        itemstack = copyAndRemoveItemStack(curiosVanillaTotemStack, player);
-                        foundValidStack = true;
-                    }
-                }
+            }
 
-                if (!foundValidStack) {
-                    for (InteractionHand hand : InteractionHand.values()) { // for each hand (main-/offhand)
-                        ItemStack stack = player.getItemInHand(hand);
-                        if (isVoidTotemOrTotem(stack)) { // is valid item
-                            itemstack = copyAndRemoveItemStack(stack, player);
-                            foundValidStack = true;
-                            break;
-                        }
+            if (ModUtils.isModLoaded(ModConstants.CURIOS_MOD_ID) && itemstack == null) { // curios api is loaded
+                ItemStack curiosVoidTotemStack = ModUtils.findCuriosItem(VoidTotem.VOID_TOTEM_ITEM.get(), player);
+                ItemStack curiosVanillaTotemStack = VoidTotemConfig.COMMON_CONFIG.ALLOW_TOTEM_OF_UNDYING.get()
+                        ? ModUtils.findCuriosItem(Items.TOTEM_OF_UNDYING, player)
+                        : ItemStack.EMPTY;
+                if (!curiosVoidTotemStack.isEmpty()) {
+                    itemstack = copyAndRemoveItemStack(curiosVoidTotemStack, player);
+                } else if (!curiosVanillaTotemStack.isEmpty()) {
+                    itemstack = copyAndRemoveItemStack(curiosVanillaTotemStack, player);
+                }
+            }
+
+            if (VoidTotemConfig.COMMON_CONFIG.USE_TOTEM_FROM_INVENTORY.get() && itemstack == null) { // totems in the player inv used (config)
+                for (ItemStack itemStack : player.getInventory().items) { // for each player inventory slot
+                    if (isVoidTotemOrTotem(itemStack)) { // is valid item
+                        itemstack = copyAndRemoveItemStack(itemStack, player);
+                        break;
                     }
                 }
             }
 
-            if (itemstack != null && foundValidStack) { // check if stack isn't null and if there
+            if (itemstack == null) {
+                for (InteractionHand hand : InteractionHand.values()) { // for each hand (main-/offhand)
+                    ItemStack stack = player.getItemInHand(hand);
+                    if (isVoidTotemOrTotem(stack)) { // is valid item
+                        itemstack = copyAndRemoveItemStack(stack, player);
+                        break;
+                    }
+                }
+            }
+
+            if (itemstack != null) { // check if stack isn't null and if there
                 if (player.connection.awaitingPositionFromClient != null) // wants to teleport
                     return;
                 if (player.isVehicle()) { // has passenger and remove it
@@ -307,6 +292,17 @@ public class VoidTotem {
         }
     }
 
+    @OnlyIn(Dist.CLIENT)
+    @SubscribeEvent
+    public void tooltip(final ItemTooltipEvent event) {
+        ItemStack stack = event.getItemStack();
+        if (isVoidTotemOrTotem(stack)
+                && VoidTotemConfig.COMMON_CONFIG.SHOW_TOTEM_TOOLTIP.get()) {
+            event.getToolTip()
+                    .add(new TranslatableComponent(ModConstants.TOOLTIP_VOID_TOTEM).withStyle(ChatFormatting.GREEN));
+        }
+    }
+
     public static boolean isVoidTotemOrTotem(ItemStack stack) {
         Item item = stack.getItem();
         boolean isVoidTotem = item == VoidTotem.VOID_TOTEM_ITEM.get();
@@ -322,17 +318,6 @@ public class VoidTotem {
         }
         itemStack.shrink(1);
         return itemStackCopy;
-    }
-
-    private void livingFall(final LivingFallEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
-            if (player.getPersistentData().getBoolean(ModConstants.NBT_TAG)) { // if player has tag
-                player.connection.aboveGroundTickCount = 0;
-                event.setDamageMultiplier(0f); // set damage multiplier to 0 => no damage
-                player.getPersistentData().putBoolean(ModConstants.NBT_TAG, false); // remove tag
-                event.setCanceled(true);
-            }
-        }
     }
 
     @OnlyIn(Dist.CLIENT)
