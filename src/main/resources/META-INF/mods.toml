@@ -5,6 +5,7 @@ license="GNU GPLv3"
 issueTrackerURL="https://github.com/Affehund/VoidTotem/issues" #optional
 displayURL="https://www.curseforge.com/minecraft/mc-mods/voidtotem" #optional
 logoFile="logo.png" #optional
+logoBlur=false
 authors="Affehund" #optional
 [[mods]] #mandatory
 modId="voidtotem" #mandatory

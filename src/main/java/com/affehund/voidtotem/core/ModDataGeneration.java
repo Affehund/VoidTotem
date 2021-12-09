@@ -85,16 +85,7 @@ public class ModDataGeneration {
                     add(ModConstants.ADVANCEMENT_VOID_TOTEM_DESC,
                             "Use a Totem of Void Undying to cheat death when falling in the void");
                 }
-                /* weird encoding
-                case "ru_ru" -> {
-                    add("_comment", "Translation (ru_ru) by BardinTheDwarf");
-                    add(VoidTotem.VOID_TOTEM_ITEM.get(), "Тотем пустоты");
-                    add(ModConstants.TOOLTIP_VOID_TOTEM,
-                            "Возьмите тотем в любую руку, чтобы предотвратить смерть от падения в пустоту");
-                    add(ModConstants.ADVANCEMENT_VOID_TOTEM_TITLE, "Право на жизнь");
-                    add(ModConstants.ADVANCEMENT_VOID_TOTEM_DESC,
-                            "Воспользуйтесь тотемом пустоты, чтобы обмануть смерть и избежать падения в пустоту");
-                }*/
+                default -> throw new IllegalStateException("Unexpected language: " + locale);
             }
         }
     }

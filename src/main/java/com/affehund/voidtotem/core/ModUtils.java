@@ -29,12 +29,12 @@ public class ModUtils {
      * Used to find an item in a curios inventory.
      *
      * @param item       Item
-     * @param livingItem LivingEntity
+     * @param livingEntity LivingEntity
      * @return an ItemStack with a given item.
      * @apiNote only use if the curios mod is loaded @see ModUtils#isModLoaded
      */
-    public static ItemStack findCuriosItem(Item item, LivingEntity livingItem) {
-        return CuriosApi.getCuriosHelper().findEquippedCurio(item, livingItem).map(ImmutableTriple::getRight)
+    public static ItemStack findCuriosItem(Item item, LivingEntity livingEntity) {
+        return CuriosApi.getCuriosHelper().findEquippedCurio(item, livingEntity).map(ImmutableTriple::getRight)
                 .orElse(ItemStack.EMPTY);
     }
 
