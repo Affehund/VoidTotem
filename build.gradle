@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '0.8-SNAPSHOT'
+	id 'fabric-loom' version '0.10-SNAPSHOT'
 	id 'maven-publish'
 	id 'com.matthewprenger.cursegradle' version '1.4.0'
 }
@@ -27,8 +27,8 @@ repositories {
 	}
 }
 
-minecraft {
-	accessWidener =  file("src/main/resources/${project.mod_id}.accesswidener")
+loom {
+	accessWidenerPath = file("src/main/resources/voidtotem.accesswidener")
 }
 
 dependencies {

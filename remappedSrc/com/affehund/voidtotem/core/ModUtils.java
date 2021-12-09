@@ -62,48 +62,55 @@ public class ModUtils {
 	}
 
 	public static boolean tryUseVoidTotem(LivingEntity livingEntity, DamageSource source) {
-		if (VoidTotemFabric.CONFIG.BLACKLISTED_DIMENSIONS.contains(livingEntity.world.getRegistryKey().getValue().toString())) return false;
-		if (source != DamageSource.OUT_OF_WORLD && livingEntity.getY() > -64)  return false;
-
+		if (VoidTotemFabric.CONFIG.BLACKLISTED_DIMENSIONS
+				.contains(livingEntity.world.getRegistryKey().getValue().toString())) // dim on blacklist
+			return false;
+		if (source != DamageSource.OUT_OF_WORLD && livingEntity.getY() > -64)
+			return false;
 		if (livingEntity instanceof ServerPlayerEntity player) {
 			player.networkHandler.floatingTicks = 0;
 
 			ItemStack itemstack = null;
+			boolean foundValidStack = false;
 
-			if (!VoidTotemFabric.CONFIG.NEEDS_TOTEM) itemstack = ItemStack.EMPTY;
-
-			if (FabricLoader.getInstance().isModLoaded(ModConstants.TRINKETS_MOD_ID) && itemstack == null) { // trinkets api is loaded
-				ItemStack curiosVoidTotemStack = ModUtils.findCuriosItem(VoidTotemFabric.VOID_TOTEM_ITEM, player);
-				ItemStack curiosVanillaTotemStack = VoidTotemFabric.CONFIG.ALLOW_TOTEM_OF_UNDYING
-						? ModUtils.findCuriosItem(Items.TOTEM_OF_UNDYING, player)
-						: ItemStack.EMPTY;
-				if (curiosVoidTotemStack != ItemStack.EMPTY) {
-					itemstack = ModUtils.copyAndRemoveItemStack(curiosVoidTotemStack, player);
-				} else if (curiosVanillaTotemStack != ItemStack.EMPTY) {
-					itemstack = ModUtils.copyAndRemoveItemStack(curiosVanillaTotemStack, player);
-				}
-			}
-
-			if (VoidTotemFabric.CONFIG.USE_TOTEM_FROM_INVENTORY && itemstack == null) {
-				for (ItemStack itemStack : player.getInventory().main) { // for each player inventory slot
-					if (ModUtils.isVoidTotemOrTotem(itemStack)) { // is valid item
-						itemstack = ModUtils.copyAndRemoveItemStack(itemStack, player);
-						break;
-					}
-				}
-			}
-
-			if (itemstack == null) {
-				for (Hand hand : Hand.values()) { // for each hand (main-/offhand)
-					ItemStack stack = player.getStackInHand(hand);
+			if (!VoidTotemFabric.CONFIG.NEEDS_TOTEM) { // totem is needed (config)
+				itemstack = ItemStack.EMPTY;
+			} else if (VoidTotemFabric.CONFIG.USE_TOTEM_FROM_INVENTORY) { // totems in the
+				// player inv used (config)
+				for (int i = 0; i < player.getInventory().size(); i++) { // for each player inventory slot
+					ItemStack stack = player.getInventory().getStack(i);
 					if (ModUtils.isVoidTotemOrTotem(stack)) { // is valid item
 						itemstack = ModUtils.copyAndRemoveItemStack(stack, player);
 						break;
 					}
 				}
+			} else {
+				if (FabricLoader.getInstance().isModLoaded(ModConstants.TRINKETS_MOD_ID)) { // curios api is loaded
+					ItemStack curiosVoidTotemStack = ModUtils.findCuriosItem(VoidTotemFabric.VOID_TOTEM_ITEM, player);
+					ItemStack curiosVanillaTotemStack = VoidTotemFabric.CONFIG.ALLOW_TOTEM_OF_UNDYING
+							? ModUtils.findCuriosItem(Items.TOTEM_OF_UNDYING, player)
+							: ItemStack.EMPTY;
+					if (curiosVoidTotemStack != ItemStack.EMPTY) {
+						itemstack = ModUtils.copyAndRemoveItemStack(curiosVoidTotemStack, player);
+						foundValidStack = true;
+					} else if (curiosVanillaTotemStack != ItemStack.EMPTY) {
+						itemstack = ModUtils.copyAndRemoveItemStack(curiosVanillaTotemStack, player);
+						foundValidStack = true;
+					}
+				}
+
+				if (!foundValidStack) {
+					for (Hand hand : Hand.values()) { // for each hand (main-/offhand)
+						ItemStack stack = player.getStackInHand(hand);
+						if (ModUtils.isVoidTotemOrTotem(stack)) { // is valid item
+							itemstack = ModUtils.copyAndRemoveItemStack(stack, player);
+							break;
+						}
+					}
+				}
 			}
 
-			if (itemstack != null) { // check if stack isn't null and if there
+			if (null != itemstack) { // check if stack isn't null and if there
 				if (player.networkHandler.requestedTeleportPos != null) // wants to teleport
 					return false;
 
