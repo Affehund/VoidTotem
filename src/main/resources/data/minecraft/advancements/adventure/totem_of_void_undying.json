@@ -17,7 +17,7 @@
   },
   "criteria": {
     "used_totem": {
-      "trigger": "minecraft:used_totem",
+      "trigger": "minecraft:using_item",
       "conditions": {
         "item": {
           "item": "voidtotem:totem_of_void_undying"

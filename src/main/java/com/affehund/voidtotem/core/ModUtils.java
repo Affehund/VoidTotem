@@ -55,7 +55,7 @@ public class ModUtils {
 		ItemStack itemStackCopy = itemStack.copy();
 		if (!itemStack.isEmpty()) { // add stats if stack isn't empty / null
 			player.incrementStat(Stats.USED.getOrCreateStat(itemStack.getItem()));
-			Criteria.USED_TOTEM.trigger(player, itemStack);
+			Criteria.USING_ITEM.trigger(player, itemStack);
 		}
 		itemStack.decrement(1);
 		return itemStackCopy;
