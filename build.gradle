@@ -12,7 +12,7 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle'
 
 group = 'com.affehund'
-version = '1.18.1-1.1.0'
+version = '1.18.1-1.1.1'
 archivesBaseName = 'voidtotem-forge'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
