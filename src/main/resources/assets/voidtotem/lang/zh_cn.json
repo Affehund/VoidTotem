@@ -1,0 +1,8 @@
+{
+  "_comment": "Translation (zh_cn) by Missing_Love",
+  "advancements.voidtotem.adventure.totem_of_void_undying.description": "当坠入虚空时，使用虚空图腾传送到安全的地方",
+  "advancements.voidtotem.adventure.totem_of_void_undying.title": "死亡传送 2",
+  "item.voidtotem.totem_of_void_undying": "虚空图腾",
+  "tooltip.voidtotem.totem_of_void_undying": "将这个图腾放在你的主/副手或\"符文\"插槽中，以防止你在虚空中死去.",
+  "trinkets.slot.charm.charm": "符文"
+}
