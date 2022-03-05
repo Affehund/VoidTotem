@@ -25,6 +25,7 @@ repositories {
         name = "Ladysnake Libs"
         url = "https://ladysnake.jfrog.io/artifactory/mods"
     }
+    flatDir { dirs 'lib' }
 }
 
 dependencies {
@@ -36,6 +37,8 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     modImplementation "dev.emi:trinkets:${project.trinkets_version}"
+
+    modApi include("com.jab125:thonkutil-base-1.8.0+b87e5abb60")
 }
 
 processResources {

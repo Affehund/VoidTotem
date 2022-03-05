@@ -1,6 +1,5 @@
 package com.affehund.voidtotem;
 
-import com.affehund.voidtotem.core.ClientPacketHandler;
 import com.affehund.voidtotem.core.ModConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
@@ -32,7 +31,6 @@ public class VoidTotemClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        ClientPacketHandler.register();
         ItemTooltipCallback.EVENT.register(VoidTotemClient::getTooltip);
     }
 }

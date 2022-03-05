@@ -1,7 +1,9 @@
 package com.affehund.voidtotem;
 
 import com.affehund.voidtotem.core.ModConstants;
+import com.affehund.voidtotem.core.ModUtils;
 import com.affehund.voidtotem.core.VoidTotemConfig;
+import com.jab125.thonkutil.api.events.EventTaxi;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.loot.v1.FabricLootSupplier;
 import net.fabricmc.fabric.api.loot.v1.event.LootTableLoadingCallback;
@@ -24,6 +26,7 @@ public class VoidTotem implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        EventTaxi.registerEventTaxiSubscriber(ModUtils.class);
         LOGGER.debug("Loading up {}!", ModConstants.MOD_NAME);
         Registry.register(Registry.ITEM, new Identifier(ModConstants.MOD_ID, ModConstants.ITEM_VOID_TOTEM),
                 VOID_TOTEM_ITEM);
