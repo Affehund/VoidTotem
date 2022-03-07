@@ -14,7 +14,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.particle.ParticleTypes;
@@ -27,7 +26,10 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Predicate;
 
 public class ModUtils {
     public static boolean tryUseVoidTotem(LivingEntity livingEntity, DamageSource source) {
@@ -77,24 +79,16 @@ public class ModUtils {
         return Arrays.stream(stacks).filter(Objects::nonNull).toList();
     }
 
-    public static ItemStack findTrinketsItem(Item item, ServerPlayerEntity player) {
+    public static ItemStack findTrinketsItem(ServerPlayerEntity player, Predicate<ItemStack> filter) {
         return TrinketsApi.getTrinketComponent(player).map(component -> {
-            List<Pair<SlotReference, ItemStack>> res = component.getEquipped(item);
+            List<Pair<SlotReference, ItemStack>> res = component.getEquipped(filter);
             return res.size() > 0 ? res.get(0).getRight() : ItemStack.EMPTY;
         }).orElse(ItemStack.EMPTY);
     }
 
     public static ItemStack getTotemFromTrinkets(ServerPlayerEntity player) {
         if (FabricLoader.getInstance().isModLoaded(ModConstants.TRINKETS_MOD_ID)) {
-            var additionalTotems = new HashSet<>(Collections.singleton(VoidTotem.VOID_TOTEM_ITEM));
-
-            if (!ModConstants.ADDITIONAL_TOTEMS_TAG.values().isEmpty())
-                additionalTotems.addAll(ModConstants.ADDITIONAL_TOTEMS_TAG.values());
-
-            for (var additionalTotem : additionalTotems) {
-                var trinketsTotemStack = ModUtils.findTrinketsItem(additionalTotem, player);
-                if (!trinketsTotemStack.isEmpty()) return trinketsTotemStack;
-            }
+            return ModUtils.findTrinketsItem(player, stack -> stack.isIn(ModConstants.ADDITIONAL_TOTEMS_TAG) || stack.isOf(VoidTotem.VOID_TOTEM_ITEM));
         }
         return null;
     }

@@ -1,9 +1,9 @@
 package com.affehund.voidtotem.core;
 
-import net.fabricmc.fabric.api.tag.TagFactory;
 import net.minecraft.item.Item;
-import net.minecraft.tag.Tag;
+import net.minecraft.tag.TagKey;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
 
 public final class ModConstants {
     public static final String MOD_ID = "voidtotem";
@@ -21,5 +21,5 @@ public final class ModConstants {
 
     public static final String TRINKETS_MOD_ID = "trinkets";
 
-    public static final Tag.Identified<Item> ADDITIONAL_TOTEMS_TAG = TagFactory.ITEM.create(new Identifier(ModConstants.MOD_ID, "additional_totems"));
+    public static final TagKey<Item> ADDITIONAL_TOTEMS_TAG = TagKey.of(Registry.ITEM_KEY, new Identifier(ModConstants.MOD_ID, "additional_totems"));
 }
