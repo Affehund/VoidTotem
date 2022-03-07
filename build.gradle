@@ -12,13 +12,13 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle'
 
 group = 'com.affehund'
-version = '1.18.1-1.2.0'
+version = '1.18.2-1.3.0'
 archivesBaseName = 'voidtotem-forge'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 minecraft {
-    mappings channel: 'official', version: '1.18.1'
+    mappings channel: 'official', version: '1.18.2'
 
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -75,11 +75,11 @@ repositories {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.18.1-39.1.2'
+    minecraft 'net.minecraftforge:forge:1.18.2-40.0.12'
 
     //curios
-    runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.18.1-5.0.6.2")
-    compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.18.1-5.0.6.2:api")
+    runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.18.2-5.0.6.3")
+    compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:1.18.2-5.0.6.3:api")
 }
 
 // Example for how to get properties into the manifest for reading at runtime.

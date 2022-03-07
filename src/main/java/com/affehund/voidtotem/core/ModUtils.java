@@ -12,13 +12,15 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.fml.ModList;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.SlotResult;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Predicate;
 
 public class ModUtils {
     public static boolean isModLoaded(String modID) {
@@ -61,7 +63,7 @@ public class ModUtils {
 
     public static ItemStack getTotemItemStack(ServerPlayer player) {
         if (VoidTotemConfig.COMMON_CONFIG.NEEDS_TOTEM.get()) {
-            var possibleTotemStacks = filterPossibleTotemStacks(getTotemFromTrinkets(player), getTotemFromInventory(player), getTotemFromHands(player));
+            var possibleTotemStacks = filterPossibleTotemStacks(getTotemFromCurios(player), getTotemFromInventory(player), getTotemFromHands(player));
             return possibleTotemStacks.stream().findFirst().orElse(null);
         }
         return ItemStack.EMPTY;
@@ -71,21 +73,13 @@ public class ModUtils {
         return Arrays.stream(stacks).filter(Objects::nonNull).toList();
     }
 
-    public static ItemStack findCuriosItem(Item item, LivingEntity livingEntity) {
-        return CuriosApi.getCuriosHelper().findFirstCurio(livingEntity, item).map(SlotResult::stack).orElse(null);
+    public static ItemStack findCuriosItem(LivingEntity livingEntity, Predicate<ItemStack> filter) {
+        return CuriosApi.getCuriosHelper().findFirstCurio(livingEntity, filter).map(SlotResult::stack).orElse(null);
     }
 
-    public static ItemStack getTotemFromTrinkets(ServerPlayer player) {
+    public static ItemStack getTotemFromCurios(ServerPlayer player) {
         if (ModUtils.isModLoaded(ModConstants.CURIOS_MOD_ID)) {
-            var additionalTotems = new HashSet<>(Collections.singleton(VoidTotem.VOID_TOTEM_ITEM.get()));
-
-            if (!VoidTotemTags.ADDITIONAL_TOTEMS.getValues().isEmpty())
-                additionalTotems.addAll(VoidTotemTags.ADDITIONAL_TOTEMS.getValues());
-
-            for (var additionalTotem : additionalTotems) {
-                var curiosTotemStack = ModUtils.findCuriosItem(additionalTotem, player);
-                if (curiosTotemStack != null) return curiosTotemStack;
-            }
+            return ModUtils.findCuriosItem(player, stack -> stack.is(VoidTotemTags.ADDITIONAL_TOTEMS) || stack.is(VoidTotem.VOID_TOTEM_ITEM.get()));
         }
         return null;
     }
