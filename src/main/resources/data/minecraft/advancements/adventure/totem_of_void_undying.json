@@ -16,18 +16,20 @@
     "hidden": false
   },
   "criteria": {
-    "used_totem": {
+    "used_void_totem": {
       "trigger": "minecraft:used_totem",
       "conditions": {
         "item": {
-          "item": "voidtotem:totem_of_void_undying"
+          "items": [
+            "voidtotem:totem_of_void_undying"
+          ]
         }
       }
     }
   },
   "requirements": [
     [
-      "used_totem"
+      "used_void_totem"
     ]
   ]
 }

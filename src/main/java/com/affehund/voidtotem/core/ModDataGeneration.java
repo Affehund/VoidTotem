@@ -2,15 +2,14 @@ package com.affehund.voidtotem.core;
 
 import com.affehund.voidtotem.ModConstants;
 import com.affehund.voidtotem.VoidTotem;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.common.collect.ImmutableList;
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.FrameType;
 import net.minecraft.advancements.critereon.UsedTotemTrigger;
 import net.minecraft.data.DataGenerator;
-import net.minecraft.data.DataProvider;
-import net.minecraft.data.HashCache;
 import net.minecraft.data.advancements.AdvancementProvider;
+import net.minecraft.data.loot.ChestLoot;
 import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeProvider;
@@ -19,15 +18,13 @@ import net.minecraft.data.tags.BlockTagsProvider;
 import net.minecraft.data.tags.ItemTagsProvider;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.Tag;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.storage.loot.LootPool;
-import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.LootTables;
+import net.minecraft.world.level.storage.loot.*;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraftforge.client.model.generators.ItemModelProvider;
@@ -36,27 +33,22 @@ import net.minecraftforge.common.data.LanguageProvider;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class ModDataGeneration {
-    private static final Logger DATAGEN_LOGGER = LogManager.getLogger();
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+    private static final Logger DATA_GEN_LOGGER = LogManager.getLogger();
 
-    /**
-     * A sub class for the creation of the language files.
-     *
-     * @author Affehund
-     * @see LanguageProvider
+    /*
+    client-side data generators
      */
+
     public static final class LanguageGen extends LanguageProvider {
 
         public LanguageGen(DataGenerator gen, String locale) {
@@ -89,14 +81,7 @@ public class ModDataGeneration {
         }
     }
 
-    /**
-     * A sub class to create the item model for the void totem.
-     *
-     * @author Affehund
-     * @see ItemModelProvider
-     */
     public static final class ItemModelGen extends ItemModelProvider {
-        private final Set<Item> blacklist = new HashSet<>();
 
         public ItemModelGen(DataGenerator gen, String modid, ExistingFileHelper existingFileHelper) {
             super(gen, modid, existingFileHelper);
@@ -106,7 +91,7 @@ public class ModDataGeneration {
         protected void registerModels() {
             for (ResourceLocation id : ForgeRegistries.ITEMS.getKeys()) {
                 Item item = ForgeRegistries.ITEMS.getValue(id);
-                if (item != null && ModConstants.MOD_ID.equals(id.getNamespace()) && !this.blacklist.contains(item)) {
+                if (item != null && ModConstants.MOD_ID.equals(id.getNamespace())) {
                     if (item instanceof BlockItem) {
                         return;
                     } else {
@@ -116,25 +101,89 @@ public class ModDataGeneration {
             }
         }
 
-        /**
-         * Used to create a item/generated item for the given resoure location and item.
-         *
-         * @param id   ResourceLocation
-         * @param item Item
-         */
-        protected void defaultItem(ResourceLocation id, Item item) {
+        private void defaultItem(ResourceLocation id, Item item) {
             this.withExistingParent(id.getPath(), "item/generated").texture("layer0",
                     new ResourceLocation(id.getNamespace(), "item/" + id.getPath()));
-            DATAGEN_LOGGER.debug("Generated item model for: " + item.getRegistryName());
+            DATA_GEN_LOGGER.debug("Generated item model for: " + item.getRegistryName());
         }
     }
 
-    /**
-     * A sub class to create the void totem recipe.
-     *
-     * @author Affehund
-     * @see RecipeProvider
-     */
+
+    /*
+     server-side data generators
+    */
+
+    public static class AdvancementGen extends AdvancementProvider {
+
+        public AdvancementGen(DataGenerator generator, ExistingFileHelper existingFileHelper) {
+            super(generator, existingFileHelper);
+        }
+
+        @Override
+        protected void registerAdvancements(@NotNull Consumer<Advancement> consumer, @NotNull ExistingFileHelper existingFileHelper) {
+            Advancement.Builder.advancement()
+                    .parent(Advancement.Builder.advancement()
+                            .build(new ResourceLocation(ModConstants.ADVANCEMENT_ADVENTURE_TOTEM_PATH)))
+                    .display(VoidTotem.VOID_TOTEM_ITEM.get(),
+                            new TranslatableComponent(ModConstants.ADVANCEMENT_VOID_TOTEM_TITLE),
+                            new TranslatableComponent(ModConstants.ADVANCEMENT_VOID_TOTEM_DESC),
+                            null, FrameType.GOAL, true, true, false)
+                    .addCriterion("used_void_totem", UsedTotemTrigger.TriggerInstance.usedTotem(VoidTotem.VOID_TOTEM_ITEM.get()))
+                    .save(consumer, ModConstants.ADVANCEMENT_ADVENTURE_VOID_TOTEM_PATH);
+        }
+    }
+
+    public static final class BlockTagsGen extends BlockTagsProvider {
+        public BlockTagsGen(DataGenerator generatorIn, String modId, ExistingFileHelper existingFileHelper) {
+            super(generatorIn, modId, existingFileHelper);
+        }
+    }
+
+    public static final class ItemTagsGen extends ItemTagsProvider {
+
+        public ItemTagsGen(DataGenerator gen, BlockTagsProvider provider, String modID, ExistingFileHelper existingFileHelper) {
+            super(gen, provider, modID, existingFileHelper);
+        }
+
+        @Override
+        protected void addTags() {
+            this.tag(VoidTotemTags.ADDITIONAL_TOTEMS);
+            this.tag(VoidTotemTags.CURIOS_CHARM).addTag(VoidTotemTags.ADDITIONAL_TOTEMS).add(VoidTotem.VOID_TOTEM_ITEM.get());
+        }
+    }
+
+    public static class LootTableGen extends LootTableProvider {
+        public LootTableGen(DataGenerator dataGeneratorIn) {
+            super(dataGeneratorIn);
+        }
+
+        @Override
+        protected @NotNull List<Pair<Supplier<Consumer<BiConsumer<ResourceLocation, LootTable.Builder>>>, LootContextParamSet>> getTables() {
+            return ImmutableList.of(Pair.of(Chests::new, LootContextParamSets.CHEST));
+        }
+
+        @Override
+        protected void validate(Map<ResourceLocation, LootTable> map, @NotNull ValidationContext validationContext) {
+            map.forEach((resourceLocation, lootTable) -> LootTables.validate(validationContext, resourceLocation, lootTable));
+        }
+
+        public static class Chests extends ChestLoot {
+
+            @Override
+            public void accept(@NotNull BiConsumer<ResourceLocation, LootTable.Builder> builder) {
+                var list = ImmutableList.of(BuiltInLootTables.END_CITY_TREASURE);
+                var voidTotemLootPool = LootPool.lootPool().when(LootItemRandomChanceCondition.randomChance(0.33F))
+                        .setRolls(ConstantValue.exactly(1)).add(LootItem.lootTableItem(VoidTotem.VOID_TOTEM_ITEM.get()).setWeight(1));
+
+                createInjectPools(builder, list, LootTable.lootTable().withPool(voidTotemLootPool));
+            }
+
+            private void createInjectPools(BiConsumer<ResourceLocation, LootTable.Builder> consumer, List<ResourceLocation> list, LootTable.Builder builder) {
+                list.forEach(reLoc -> consumer.accept(new ResourceLocation(ModConstants.MOD_ID, "inject/" + reLoc.getPath()), builder));
+            }
+        }
+    }
+
     public static final class RecipeGen extends RecipeProvider {
         public RecipeGen(DataGenerator gen) {
             super(gen);
@@ -142,153 +191,11 @@ public class ModDataGeneration {
 
         @Override
         protected void buildCraftingRecipes(@Nonnull Consumer<FinishedRecipe> consumer) {
-            /**
-             * The void totem is created with a shaped recipe:
-             *
-             * chorus fruit, eye of ender, chorus fruit,
-             *
-             * emerald, totem of undying, emerald
-             *
-             * null, eye of ender, null
-             */
             ShapedRecipeBuilder.shaped(VoidTotem.VOID_TOTEM_ITEM.get()).pattern("cec").pattern("dtd").pattern(" e ")
                     .define('c', Items.CHORUS_FRUIT).define('e', Items.ENDER_EYE).define('d', Items.EMERALD)
                     .define('t', Items.TOTEM_OF_UNDYING).unlockedBy("has_chorus_fruit", has(Items.CHORUS_FRUIT))
                     .unlockedBy("has_ender_eye", has(Items.ENDER_EYE)).unlockedBy("has_emerald", has(Items.EMERALD))
                     .unlockedBy("has_totem", has(Items.TOTEM_OF_UNDYING)).save(consumer);
-        }
-
-    }
-
-    /**
-     * A sub class with that block tags could be generated, only needed for the
-     * ItemTagsGen.
-     *
-     * @author Affehund
-     * @see BlockTagsProvider
-     * @see ItemTagsGen
-     */
-    public static final class BlockTagsGen extends BlockTagsProvider {
-        public BlockTagsGen(DataGenerator generatorIn, String modId, ExistingFileHelper existingFileHelper) {
-            super(generatorIn, modId, existingFileHelper);
-        }
-    }
-
-    /**
-     * A sub class to create a tag to add the void totem and totem of undying to the
-     * curios charm slot.
-     *
-     * @author Affehund
-     * @see ItemTagsProvider
-     */
-    public static final class ItemTagsGen extends ItemTagsProvider {
-
-        public ItemTagsGen(DataGenerator gen, BlockTagsProvider provider, String modID,
-                           ExistingFileHelper existingFileHelper) {
-            super(gen, provider, modID, existingFileHelper);
-        }
-
-        @Override
-        protected void addTags() {
-            this.tag(CURIOS_CHARM).add(VoidTotem.VOID_TOTEM_ITEM.get()).add(Items.TOTEM_OF_UNDYING);
-        }
-    }
-
-    public static final Tag.Named<Item> CURIOS_CHARM = modTag(ModConstants.CURIOS_CHARM_SLOT,
-            ModConstants.CURIOS_MOD_ID);
-
-    /**
-     * @param name  String
-     * @param modID String
-     * @return an INamedTag for a given string (the tag name) and another string
-     * (the mod id).
-     */
-    private static Tag.Named<Item> modTag(String name, String modID) {
-        return ItemTags.bind(modID + ":" + name);
-    }
-
-    /**
-     * A sub class to create the advancement when you use the totem of void undying.
-     *
-     * @author Affehund
-     * @see AdvancementProvider
-     */
-    public static class AdvancementGen extends AdvancementProvider {
-        private final DataGenerator generator;
-
-        public AdvancementGen(DataGenerator generatorIn) {
-            super(generatorIn);
-            this.generator = generatorIn;
-        }
-
-        private void registerAdvancements(Consumer<Advancement> consumer) {
-            Advancement.Builder.advancement()
-                    .parent(Advancement.Builder.advancement()
-                            .build(new ResourceLocation(ModConstants.ADVANCEMENT_ADVENTURE_TOTEM_PATH)))
-                    .display(VoidTotem.VOID_TOTEM_ITEM.get(),
-                            new TranslatableComponent(ModConstants.ADVANCEMENT_VOID_TOTEM_TITLE),
-                            new TranslatableComponent(ModConstants.ADVANCEMENT_VOID_TOTEM_DESC),
-                            (ResourceLocation) null, FrameType.GOAL, true, true, false)
-                    .addCriterion("used_totem", UsedTotemTrigger.TriggerInstance.usedTotem(VoidTotem.VOID_TOTEM_ITEM.get()))
-                    .save(consumer, ModConstants.ADVANCEMENT_ADVENTURE_VOID_TOTEM_PATH);
-        }
-
-        @Override
-        public void run(@Nullable HashCache cache) {
-            Path outputFolder = this.generator.getOutputFolder();
-            Consumer<Advancement> consumer = (advancement) -> {
-
-                Path path = outputFolder.resolve("data/" + advancement.getId().getNamespace() + "/advancements/"
-                        + advancement.getId().getPath() + ".json");
-                try {
-                    DataProvider.save(GSON, cache, advancement.deconstruct().serializeToJson(), path);
-                    DATAGEN_LOGGER.debug("Creating advancement {}", advancement.getId());
-                } catch (IOException e) {
-                    DATAGEN_LOGGER.error("Couldn't create advancement {}", path, e);
-                }
-            };
-            registerAdvancements(consumer);
-        }
-    }
-
-    /**
-     * A sub class to create the end city loot table injection for the void totem.
-     *
-     * @author Affehund
-     */
-    public static class LootTableGen extends LootTableProvider {
-        private final DataGenerator generator;
-
-        public LootTableGen(DataGenerator dataGeneratorIn) {
-            super(dataGeneratorIn);
-            this.generator = dataGeneratorIn;
-        }
-
-        @Override
-        public void run(@Nonnull HashCache cache) {
-            Map<ResourceLocation, LootTable> tables = new HashMap<>();
-
-            LootPool.Builder voidtotem_loot_builder = LootPool.lootPool().name("main")
-                    .when(LootItemRandomChanceCondition.randomChance(0.33F)).setRolls(ConstantValue.exactly(1))
-                    .add(LootItem.lootTableItem(VoidTotem.VOID_TOTEM_ITEM.get()).setWeight(1));
-            tables.put(ModConstants.LOCATION_END_CITY_TREASURE_INJECTION,
-                    LootTable.lootTable().withPool(voidtotem_loot_builder).build());
-
-            this.writeLootTables(cache, tables);
-        }
-
-        private void writeLootTables(HashCache cache, Map<ResourceLocation, LootTable> tables) {
-            Path outputFolder = this.generator.getOutputFolder();
-            tables.forEach((key, lootTable) -> {
-                Path path = outputFolder
-                        .resolve("data/" + key.getNamespace() + "/loot_tables/" + key.getPath() + ".json");
-                try {
-                    DataProvider.save(GSON, cache, LootTables.serialize(lootTable), path);
-                    DATAGEN_LOGGER.debug("Creating loot table {}", key.getPath());
-                } catch (IOException e) {
-                    DATAGEN_LOGGER.error("Couldn't create loot table {}", key.getPath(), e);
-                }
-            });
         }
     }
 }

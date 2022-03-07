@@ -16,7 +16,7 @@
     "hidden": false
   },
   "criteria": {
-    "used_totem": {
+    "used_void_totem": {
       "trigger": "minecraft:used_totem",
       "conditions": {
         "item": {
@@ -29,7 +29,7 @@
   },
   "requirements": [
     [
-      "used_totem"
+      "used_void_totem"
     ]
   ]
 }

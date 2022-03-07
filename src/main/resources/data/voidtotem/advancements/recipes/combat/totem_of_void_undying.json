@@ -11,7 +11,9 @@
       "conditions": {
         "items": [
           {
-            "item": "minecraft:chorus_fruit"
+            "items": [
+              "minecraft:chorus_fruit"
+            ]
           }
         ]
       }
@@ -21,7 +23,9 @@
       "conditions": {
         "items": [
           {
-            "item": "minecraft:ender_eye"
+            "items": [
+              "minecraft:ender_eye"
+            ]
           }
         ]
       }
@@ -31,7 +35,9 @@
       "conditions": {
         "items": [
           {
-            "item": "minecraft:emerald"
+            "items": [
+              "minecraft:emerald"
+            ]
           }
         ]
       }
@@ -41,7 +47,9 @@
       "conditions": {
         "items": [
           {
-            "item": "minecraft:totem_of_undying"
+            "items": [
+              "minecraft:totem_of_undying"
+            ]
           }
         ]
       }
