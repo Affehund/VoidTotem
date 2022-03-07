@@ -1,8 +1,6 @@
 package com.affehund.voidtotem.core;
-import java.util.List;
 
 import com.affehund.voidtotem.VoidTotem;
-
 import dev.emi.trinkets.api.SlotReference;
 import dev.emi.trinkets.api.TrinketsApi;
 import net.fabricmc.api.EnvType;
@@ -18,7 +16,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -30,133 +27,172 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 
-/**
- * A class with some utilities methods for the mod.
- * 
- * @author Affehund
- *
- */
+import java.util.*;
+
 public class ModUtils {
-	public static ItemStack findCuriosItem(Item item, ServerPlayerEntity player) {
-		return TrinketsApi.getTrinketComponent(player).map(component -> {
-			List<Pair<SlotReference, ItemStack>> res = component.getEquipped(item);
-			return res.size() > 0 ? res.get(0).getRight() : ItemStack.EMPTY;
-		}).orElse(ItemStack.EMPTY);
-	}
+    public static boolean tryUseVoidTotem(LivingEntity livingEntity, DamageSource source) {
+        if (!isDimensionBlacklisted(livingEntity) && isOutOfWorld(source, livingEntity)) {
+            if (livingEntity instanceof ServerPlayerEntity player && player.networkHandler.requestedTeleportPos == null) {
+                player.networkHandler.floatingTicks = 0;
 
-	public static boolean isVoidTotemOrTotem(ItemStack stack) {
-		Item item = stack.getItem();
-		boolean isVoidTotem = item == VoidTotem.VOID_TOTEM_ITEM;
-		boolean isTotemOfUndying = VoidTotem.CONFIG.ALLOW_TOTEM_OF_UNDYING && item == Items.TOTEM_OF_UNDYING;
-		return isVoidTotem || isTotemOfUndying;
-	}
+                ItemStack stack = getTotemItemStack(player);
 
-	public static ItemStack copyAndRemoveItemStack(ItemStack itemStack, ServerPlayerEntity player) {
-		ItemStack itemStackCopy = itemStack.copy();
-		if (!itemStack.isEmpty()) { // add stats if stack isn't empty / null
-			player.incrementStat(Stats.USED.getOrCreateStat(itemStack.getItem()));
-			Criteria.USING_ITEM.trigger(player, itemStack);
-		}
-		itemStack.decrement(1);
-		return itemStackCopy;
-	}
+                if (stack != null) {
+                    giveUseStatAndCriterion(stack, player);
+                    stack = damageOrShrinkItemStack(stack, player);
 
-	public static boolean tryUseVoidTotem(LivingEntity livingEntity, DamageSource source) {
-		if (VoidTotem.CONFIG.BLACKLISTED_DIMENSIONS.contains(livingEntity.world.getRegistryKey().getValue().toString())) return false;
-		if (source != DamageSource.OUT_OF_WORLD && livingEntity.getY() > -64)  return false;
+                    if (player.hasPlayerRider()) player.removeAllPassengers();
 
-		if (livingEntity instanceof ServerPlayerEntity player) {
-			player.networkHandler.floatingTicks = 0;
+                    player.stopRiding();
+                    player.addScoreboardTag(ModConstants.NBT_TAG);
+                    player.setHealth(1.0f);
 
-			ItemStack itemstack = null;
+                    teleportToSavePosition(player);
+                    sendTotemEffectPacket(stack, player);
 
-			if (!VoidTotem.CONFIG.NEEDS_TOTEM) itemstack = ItemStack.EMPTY;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
-			if (FabricLoader.getInstance().isModLoaded(ModConstants.TRINKETS_MOD_ID) && itemstack == null) { // trinkets api is loaded
-				ItemStack curiosVoidTotemStack = ModUtils.findCuriosItem(VoidTotem.VOID_TOTEM_ITEM, player);
-				ItemStack curiosVanillaTotemStack = VoidTotem.CONFIG.ALLOW_TOTEM_OF_UNDYING
-						? ModUtils.findCuriosItem(Items.TOTEM_OF_UNDYING, player)
-						: ItemStack.EMPTY;
-				if (curiosVoidTotemStack != ItemStack.EMPTY) {
-					itemstack = ModUtils.copyAndRemoveItemStack(curiosVoidTotemStack, player);
-				} else if (curiosVanillaTotemStack != ItemStack.EMPTY) {
-					itemstack = ModUtils.copyAndRemoveItemStack(curiosVanillaTotemStack, player);
-				}
-			}
+    public static boolean isDimensionBlacklisted(LivingEntity livingEntity) {
+        return VoidTotem.CONFIG.BLACKLISTED_DIMENSIONS.contains(livingEntity.world.getRegistryKey().getValue().toString());
+    }
 
-			if (VoidTotem.CONFIG.USE_TOTEM_FROM_INVENTORY && itemstack == null) {
-				for (ItemStack itemStack : player.getInventory().main) { // for each player inventory slot
-					if (ModUtils.isVoidTotemOrTotem(itemStack)) { // is valid item
-						itemstack = ModUtils.copyAndRemoveItemStack(itemStack, player);
-						break;
-					}
-				}
-			}
+    public static boolean isOutOfWorld(DamageSource source, LivingEntity livingEntity) {
+        return source.equals(DamageSource.OUT_OF_WORLD) && livingEntity.getY() < livingEntity.world.getBottomY();
+    }
 
-			if (itemstack == null) {
-				for (Hand hand : Hand.values()) { // for each hand (main-/offhand)
-					ItemStack stack = player.getStackInHand(hand);
-					if (ModUtils.isVoidTotemOrTotem(stack)) { // is valid item
-						itemstack = ModUtils.copyAndRemoveItemStack(stack, player);
-						break;
-					}
-				}
-			}
+    public static ItemStack getTotemItemStack(ServerPlayerEntity player) {
+        if (VoidTotem.CONFIG.NEEDS_TOTEM) {
+            var possibleTotemStacks = filterPossibleTotemStacks(getTotemFromTrinkets(player), getTotemFromInventory(player), getTotemFromHands(player));
+            return possibleTotemStacks.stream().findFirst().orElse(null);
+        }
+        return ItemStack.EMPTY;
+    }
 
-			if (itemstack != null) { // check if stack isn't null and if there
-				if (player.networkHandler.requestedTeleportPos != null) return false;
+    public static List<ItemStack> filterPossibleTotemStacks(ItemStack... stacks) {
+        return Arrays.stream(stacks).filter(Objects::nonNull).toList();
+    }
 
-				if (player.hasPlayerRider()) player.removeAllPassengers();
-				player.stopRiding();
+    public static ItemStack findTrinketsItem(Item item, ServerPlayerEntity player) {
+        return TrinketsApi.getTrinketComponent(player).map(component -> {
+            List<Pair<SlotReference, ItemStack>> res = component.getEquipped(item);
+            return res.size() > 0 ? res.get(0).getRight() : ItemStack.EMPTY;
+        }).orElse(ItemStack.EMPTY);
+    }
 
-				long lastBlockPos = ((IPlayerEntityMixinAccessor) player).getBlockPosAsLong();
-				BlockPos teleportPos = BlockPos.fromLong(lastBlockPos);
+    public static ItemStack getTotemFromTrinkets(ServerPlayerEntity player) {
+        if (FabricLoader.getInstance().isModLoaded(ModConstants.TRINKETS_MOD_ID)) {
+            var additionalTotems = new HashSet<>(Collections.singleton(VoidTotem.VOID_TOTEM_ITEM));
 
-				boolean teleportedToBlock = false;
-				for (int i = 0; i < 16; i++) { // try 16 times to teleport the player to a good spot
+            if (!ModConstants.ADDITIONAL_TOTEMS_TAG.values().isEmpty())
+                additionalTotems.addAll(ModConstants.ADDITIONAL_TOTEMS_TAG.values());
 
-					double x = teleportPos.getX() + (player.getRandom().nextDouble() - 0.5D) * 4.0D;
-					double y = MathHelper.clamp(player.getRandom().nextInt() * player.world.getHeight(), 0.0D,
-							player.world.getHeight() - 1);
-					double z = teleportPos.getZ() + (player.getRandom().nextDouble() - 0.5D) * 4.0;
+            for (var additionalTotem : additionalTotems) {
+                var trinketsTotemStack = ModUtils.findTrinketsItem(additionalTotem, player);
+                if (!trinketsTotemStack.isEmpty()) return trinketsTotemStack;
+            }
+        }
+        return null;
+    }
 
-					if (player.teleport(x, y, z, true)) { // if can teleport break
-						teleportedToBlock = true;
-						break;
-					}
-				}
+    public static ItemStack getTotemFromInventory(ServerPlayerEntity player) {
+        if (VoidTotem.CONFIG.USE_TOTEM_FROM_INVENTORY) {
+            for (ItemStack stack : player.getInventory().main) {
+                if (ModUtils.isVoidTotemOrAdditionalTotem(stack)) return stack;
+            }
+        }
+        return null;
+    }
 
-				if (!teleportedToBlock) { // if can't teleport to a block teleport to height set in config
-					player.teleport(teleportPos.getX(), VoidTotem.CONFIG.TELEPORT_HEIGHT, teleportPos.getZ());
-					player.networkHandler.floatingTicks = 0;
-				}
+    public static ItemStack getTotemFromHands(ServerPlayerEntity player) {
+        for (Hand hand : Hand.values()) {
+            ItemStack stack = player.getStackInHand(hand);
+            if (ModUtils.isVoidTotemOrAdditionalTotem(stack)) return stack;
+        }
+        return null;
+    }
 
-				player.addScoreboardTag(ModConstants.NBT_TAG); // add tag to prevent fall damage
-				player.setHealth(1.0f); // setHealth
+    public static boolean isVoidTotemOrAdditionalTotem(ItemStack stack) {
+        return isVoidTotem(stack) || isAdditionalTotem(stack);
+    }
 
-				PacketByteBuf buf = PacketByteBufs.create();
-				buf.writeItemStack(itemstack);
-				buf.writeInt(player.getId());
-				ServerPlayNetworking.send(player, ModConstants.IDENTIFIER_TOTEM_EFFECT_PACKET, buf);
-				for (ServerPlayerEntity player2 : PlayerLookup.tracking((ServerWorld) player.world,
-						player.getBlockPos())) {
-					ServerPlayNetworking.send(player2, ModConstants.IDENTIFIER_TOTEM_EFFECT_PACKET, buf);
-				}
-				return true;
-			}
-		}
-		return false;
-	}
+    public static boolean isVoidTotem(ItemStack stack) {
+        return stack.getItem().equals(VoidTotem.VOID_TOTEM_ITEM);
+    }
 
-	@Environment(EnvType.CLIENT)
-	public static void playActivateAnimation(ItemStack stack, Entity entity) {
-		MinecraftClient mc = MinecraftClient.getInstance();
-		mc.particleManager.addEmitter(entity, ParticleTypes.TOTEM_OF_UNDYING, 30); // particles
-		assert mc.world != null;
-		mc.world.playSound(entity.getX(), entity.getY(), entity.getZ(), SoundEvents.ITEM_TOTEM_USE,
-				entity.getSoundCategory(), 1.0F, 1.0F, false); // sound
-		if (entity == mc.player) {
-			mc.gameRenderer.showFloatingItem(stack); // animation
-		}
-	}
+    public static boolean isAdditionalTotem(ItemStack stack) {
+        return stack.isIn(ModConstants.ADDITIONAL_TOTEMS_TAG);
+    }
+
+    public static ItemStack damageOrShrinkItemStack(ItemStack stack, ServerPlayerEntity player) {
+        var copiedStack = stack.copy();
+        if (stack.isDamageable()) {
+            stack.damage(1, player.getRandom(), player);
+        } else {
+            stack.decrement(1);
+        }
+        return copiedStack;
+    }
+
+    public static void giveUseStatAndCriterion(ItemStack stack, ServerPlayerEntity player) {
+        if (!stack.isEmpty()) {
+            player.incrementStat(Stats.USED.getOrCreateStat(stack.getItem()));
+            Criteria.USED_TOTEM.trigger(player, stack);
+        }
+    }
+
+    public static void teleportToSavePosition(ServerPlayerEntity player) {
+        long lastBlockPos = ((IPlayerEntityMixinAccessor) player).getBlockPosAsLong();
+        var teleportPos = BlockPos.fromLong(lastBlockPos);
+
+        var positionInRadius = positionInRadius(player, teleportPos);
+        if (positionInRadius == null) {
+            player.teleport(teleportPos.getX(), player.world.getTopY() + VoidTotem.CONFIG.TELEPORT_HEIGHT_OFFSET, teleportPos.getZ());
+            player.networkHandler.floatingTicks = 0;
+        }
+    }
+
+    public static BlockPos positionInRadius(ServerPlayerEntity player, BlockPos teleportPos) {
+        for (int i = 0; i < 16; i++) {
+
+            var maxBuildHeight = player.world.getTopY();
+
+            var x = teleportPos.getX() + (player.getRandom().nextDouble() - 0.5D) * 4.0D;
+            var y = MathHelper.clamp(player.getRandom().nextInt() * maxBuildHeight, 0.0D, maxBuildHeight - 1);
+            var z = teleportPos.getZ() + (player.getRandom().nextDouble() - 0.5D) * 4.0;
+
+            var pos = new BlockPos(x, y, z);
+            if (player.teleport(x, y, z, true)) {
+                return pos;
+            }
+        }
+        return null;
+    }
+
+    public static void sendTotemEffectPacket(ItemStack stack, ServerPlayerEntity player) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeItemStack(stack);
+        buf.writeInt(player.getId());
+        ServerPlayNetworking.send(player, ModConstants.IDENTIFIER_TOTEM_EFFECT_PACKET, buf);
+        for (ServerPlayerEntity player2 : PlayerLookup.tracking((ServerWorld) player.world,
+                player.getBlockPos())) {
+            ServerPlayNetworking.send(player2, ModConstants.IDENTIFIER_TOTEM_EFFECT_PACKET, buf);
+        }
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static void playActivateAnimation(ItemStack stack, Entity entity) {
+        MinecraftClient mc = MinecraftClient.getInstance();
+        mc.particleManager.addEmitter(entity, ParticleTypes.TOTEM_OF_UNDYING, 30);
+
+        if (mc.world != null)
+            mc.world.playSound(entity.getX(), entity.getY(), entity.getZ(), SoundEvents.ITEM_TOTEM_USE, entity.getSoundCategory(), 1.0F, 1.0F, false);
+
+        if (entity == mc.player)
+            mc.gameRenderer.showFloatingItem(stack);
+    }
 }

@@ -8,13 +8,13 @@
     "Affehund"
   ],
   "contact": {
-    "website": "https://www.curseforge.com/minecraft/mc-mods/voidtotem-fabric",
-    "repo": "https://github.com/Affehund/VoidTotem",
-    "issues": "https://github.com/affehund/VoidTotem/issues"
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/voidtotem-fabric",
+    "issues": "https://github.com/affehund/VoidTotem/issues",
+    "sources": "https://github.com/Affehund/VoidTotem"
   },
   "license": "GPL-3.0",
   "icon": "logo.png",
-  "accessWidener" : "voidtotem.accesswidener",
+  "accessWidener": "voidtotem.accesswidener",
   "environment": "*",
   "entrypoints": {
     "client": [
@@ -22,6 +22,9 @@
     ],
     "main": [
       "com.affehund.voidtotem.VoidTotem"
+    ],
+    "modmenu": [
+      "com.affehund.voidtotem.core.config.VoidTotemMenu"
     ]
   },
   "mixins": [

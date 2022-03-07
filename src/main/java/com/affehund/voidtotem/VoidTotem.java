@@ -1,7 +1,9 @@
 package com.affehund.voidtotem;
 
 import com.affehund.voidtotem.core.ModConstants;
-import com.affehund.voidtotem.core.VoidTotemConfig;
+import com.affehund.voidtotem.core.config.VoidTotemConfig;
+import me.shedaniel.autoconfig.AutoConfig;
+import me.shedaniel.autoconfig.serializer.Toml4jConfigSerializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.loot.v1.FabricLootSupplier;
 import net.fabricmc.fabric.api.loot.v1.event.LootTableLoadingCallback;
@@ -27,7 +29,9 @@ public class VoidTotem implements ModInitializer {
         LOGGER.debug("Loading up {}!", ModConstants.MOD_NAME);
         Registry.register(Registry.ITEM, new Identifier(ModConstants.MOD_ID, ModConstants.ITEM_VOID_TOTEM),
                 VOID_TOTEM_ITEM);
-        CONFIG = VoidTotemConfig.setup();
+
+        AutoConfig.register(VoidTotemConfig.class, Toml4jConfigSerializer::new);
+        CONFIG = AutoConfig.getConfigHolder(VoidTotemConfig.class).getConfig();
 
         LootTableLoadingCallback.EVENT.register((resourceManager, lootManager, id, supplier, setter) -> {
             if (ModConstants.IDENTIFIER_END_CITY_TREASURE.equals(id) && CONFIG.ADD_END_CITY_TREASURE) {
