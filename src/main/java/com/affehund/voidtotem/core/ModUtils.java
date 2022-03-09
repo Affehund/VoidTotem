@@ -1,6 +1,7 @@
 package com.affehund.voidtotem.core;
 
 import com.affehund.voidtotem.VoidTotem;
+import com.affehund.voidtotem.api.ModEvents;
 import dev.emi.trinkets.api.SlotReference;
 import dev.emi.trinkets.api.TrinketsApi;
 import net.fabricmc.api.EnvType;
@@ -21,6 +22,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
@@ -40,6 +42,8 @@ public class ModUtils {
                 ItemStack stack = getTotemItemStack(player);
 
                 if (stack != null) {
+                    ActionResult result = ModEvents.VOID_TOTEM_EVENT.invoker().interact(stack, livingEntity, source);
+                    if (result.equals(ActionResult.FAIL)) return true;
                     giveUseStatAndCriterion(stack, player);
                     stack = damageOrShrinkItemStack(stack, player);
 
