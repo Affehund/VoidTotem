@@ -19,7 +19,7 @@ public interface ModEvents {
             (listeners) -> (stack, entity, source) -> {
                 for (VoidTotemEvent listener : listeners) {
                     ActionResult result = listener.interact(stack, entity, source);
-                    if(result.equals(ActionResult.FAIL) {
+                    if(result.equals(ActionResult.FAIL)) {
                         return ActionResult.CONSUME_PARTIAL; // old functionality
                     }
                     if(result != ActionResult.PASS) {
