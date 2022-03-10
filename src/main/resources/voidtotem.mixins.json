@@ -4,9 +4,7 @@
   	"package": "com.affehund.voidtotem.mixin",
   	"compatibilityLevel": "JAVA_16",
   	"mixins": [
-  	    "LivingEntityMixin",
-    	"ServerPlayerEntityMixin",
-    	"PlayerEntityMixin"
+  	    "LivingEntityMixin"
   	],
   	"client": [
   	],
