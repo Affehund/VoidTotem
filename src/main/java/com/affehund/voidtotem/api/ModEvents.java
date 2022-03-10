@@ -21,6 +21,7 @@ public interface ModEvents {
                     ActionResult result = listener.interact(stack, entity, source);
                     if(result.equals(ActionResult.FAIL) {
                         return ActionResult.CONSUME_PARTIAL; // old functionality
+                    }
                     if(result != ActionResult.PASS) {
                         return result;
                     }
