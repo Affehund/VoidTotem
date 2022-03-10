@@ -11,6 +11,7 @@ import net.minecraftforge.eventbus.api.Event;
  * Cancel the event to disable normal functionality
  */
 @Cancelable
+@Event.HasResult
 public class VoidTotemEvent extends Event {
     private final ItemStack itemStack;
     private final LivingEntity entity;
@@ -36,5 +37,11 @@ public class VoidTotemEvent extends Event {
     @Override
     public boolean isCancelable() {
         return true;
+    }
+
+    @Override
+    public void setResult(Result value) {
+        if (value != Result.DEFAULT) setCanceled(true);
+        super.setResult(value);
     }
 }

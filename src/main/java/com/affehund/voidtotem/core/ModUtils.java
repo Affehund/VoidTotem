@@ -15,6 +15,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.fml.ModList;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.SlotResult;
@@ -37,7 +38,10 @@ public class ModUtils {
                 ItemStack stack = getTotemItemStack(player);
 
                 if (stack != null) {
-                    if (MinecraftForge.EVENT_BUS.post(new VoidTotemEvent(stack, livingEntity, source))) return true;
+                    var event = new VoidTotemEvent(stack, livingEntity, source);
+                    MinecraftForge.EVENT_BUS.post(event);
+                    if (event.getResult().equals(Event.Result.ALLOW)) return true;
+                    if (event.getResult().equals(Event.Result.DENY)) return false;
                     giveUseStatAndCriterion(stack, player);
                     stack = damageOrShrinkItemStack(stack, player);
 
