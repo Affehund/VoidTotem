@@ -9,7 +9,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -77,7 +79,7 @@ public class VoidTotem {
         forgeEventBus.register(this);
         forgeEventBus.addListener(this::livingHurt);
         forgeEventBus.addListener(this::livingFall);
-        forgeEventBus.addListener(this::playerTick);
+        forgeEventBus.addListener(this::worldTick);
         forgeEventBus.addGenericListener(ItemStack.class, this::attachCaps);
 
         PacketHandler.registerMessages();
@@ -150,35 +152,37 @@ public class VoidTotem {
     }
 
     private void livingFall(LivingFallEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
-            if (player.getPersistentData().getBoolean(ModConstants.NBT_TAG)) {
+        //if (event.getEntity() instanceof ServerPlayer player) {
+            if (event.getEntity().getPersistentData().getBoolean(ModConstants.NBT_TAG)) {
+                if (event.getEntity() instanceof ServerPlayer player)
                 player.connection.aboveGroundTickCount = 0;
                 event.setDamageMultiplier(0f);
+                if (event.getEntity() instanceof ServerPlayer player)
                 player.getPersistentData().putBoolean(ModConstants.NBT_TAG, false);
                 event.setCanceled(true);
             }
-        }
+       // }
     }
 
-    private void playerTick(TickEvent.PlayerTickEvent event) {
-        if (event.side == LogicalSide.SERVER && event.phase == TickEvent.Phase.START) {
-            if (event.player instanceof ServerPlayer player) {
+    private void worldTick(TickEvent.WorldTickEvent event) {
+        if (event.side == LogicalSide.SERVER && event.phase == TickEvent.Phase.START && event.world instanceof ServerLevel level) {
+            for (Entity entity : level.getEntities().getAll()) {
+                BlockPos pos = entity.blockPosition();
 
-                BlockPos pos = player.blockPosition();
-
-                long lastPosLong = player.getPersistentData().getLong(ModConstants.LAST_BLOCK_POS);
+                long lastPosLong = entity.getPersistentData().getLong(ModConstants.LAST_BLOCK_POS);
                 BlockPos lastPos = BlockPos.of(lastPosLong);
-                if (player.level.getBlockState(pos.below()).canOcclude()) {
+                if (entity.level.getBlockState(pos.below()).canOcclude()) {
                     if (!lastPos.equals(pos)) {
-                        player.getPersistentData().putLong(ModConstants.LAST_BLOCK_POS, pos.asLong());
+                        entity.getPersistentData().putLong(ModConstants.LAST_BLOCK_POS, pos.asLong());
                     }
                 }
 
-                if (player.getPersistentData().getBoolean(ModConstants.NBT_TAG)) {
+                if (entity.getPersistentData().getBoolean(ModConstants.NBT_TAG)) {
+                    if (entity instanceof ServerPlayer player)
                     player.connection.aboveGroundTickCount = 0;
-                    if (player.isInWater() || player.getAbilities().flying || player.getAbilities().mayfly
-                            || player.level.getBlockState(pos).getBlock() == Blocks.COBWEB) {
-                        player.getPersistentData().putBoolean(ModConstants.NBT_TAG, false);
+                    if (entity.isInWater() || entity instanceof ServerPlayer player && (player.getAbilities().flying || player.getAbilities().mayfly)
+                            || entity.level.getBlockState(pos).getBlock() == Blocks.COBWEB) {
+                        entity.getPersistentData().putBoolean(ModConstants.NBT_TAG, false);
                     }
                 }
             }
