@@ -1,6 +1,6 @@
 package com.affehund.voidtotem.core;
 
-public interface ILivingEntityMixinAccessor {
+public interface IPlayerEntityMixinAccessor {
     long getBlockPosAsLong();
 
     long setBlockPosAsLong(long pos);

@@ -38,28 +38,28 @@ public class ModUtils {
         if (!isDimensionBlacklisted(livingEntity) && isOutOfWorld(source, livingEntity)) {
             if (livingEntity instanceof ServerPlayerEntity player && player.networkHandler.requestedTeleportPos == null) {
                 player.networkHandler.floatingTicks = 0;
-            }
-            ItemStack stack = getTotemItemStack(livingEntity);
 
-            if (stack != null) {
-                ActionResult result = ModEvents.VOID_TOTEM_EVENT.invoker().interact(stack, livingEntity, source);
-                // if (result.equals(ActionResult.FAIL)) return true; // no longer needed
-                if (result.equals(ActionResult.CONSUME)) return false;
-                if (result.equals(ActionResult.CONSUME_PARTIAL)) return true;
-                if (livingEntity instanceof ServerPlayerEntity player)
-                giveUseStatAndCriterion(stack, player);
-                stack = damageOrShrinkItemStack(stack, livingEntity);
+                ItemStack stack = getTotemItemStack(player);
 
-                if (livingEntity.hasPlayerRider()) livingEntity.removeAllPassengers();
+                if (stack != null) {
+                    ActionResult result = ModEvents.VOID_TOTEM_EVENT.invoker().interact(stack, livingEntity, source);
+                    // if (result.equals(ActionResult.FAIL)) return true; // no longer needed
+                    if (result.equals(ActionResult.CONSUME)) return false;
+                    if (result.equals(ActionResult.CONSUME_PARTIAL)) return true;
+                    giveUseStatAndCriterion(stack, player);
+                    stack = damageOrShrinkItemStack(stack, player);
 
-                livingEntity.stopRiding();
-                livingEntity.addScoreboardTag(ModConstants.NBT_TAG);
-                livingEntity.setHealth(1.0f);
+                    if (player.hasPlayerRider()) player.removeAllPassengers();
 
-                teleportToSavePosition(livingEntity);
-                sendTotemEffectPacket(stack, livingEntity);
+                    player.stopRiding();
+                    player.addScoreboardTag(ModConstants.NBT_TAG);
+                    player.setHealth(1.0f);
 
-                return true;
+                    teleportToSavePosition(player);
+                    sendTotemEffectPacket(stack, player);
+
+                    return true;
+                }
             }
         }
         return false;
@@ -73,11 +73,9 @@ public class ModUtils {
         return source.equals(DamageSource.OUT_OF_WORLD) && livingEntity.getY() < livingEntity.world.getBottomY();
     }
 
-    public static ItemStack getTotemItemStack(LivingEntity entity) {
+    public static ItemStack getTotemItemStack(ServerPlayerEntity player) {
         if (VoidTotem.CONFIG.NEEDS_TOTEM) {
-            var possibleTotemStacks = filterPossibleTotemStacks(getTotemFromHands(entity));
-            if (entity instanceof ServerPlayerEntity player)
-                possibleTotemStacks = filterPossibleTotemStacks(getTotemFromTrinkets(player), getTotemFromInventory(player), getTotemFromHands(entity));
+            var possibleTotemStacks = filterPossibleTotemStacks(getTotemFromTrinkets(player), getTotemFromInventory(player), getTotemFromHands(player));
             return possibleTotemStacks.stream().findFirst().orElse(null);
         }
         return ItemStack.EMPTY;
@@ -110,9 +108,9 @@ public class ModUtils {
         return null;
     }
 
-    public static ItemStack getTotemFromHands(LivingEntity entity) {
+    public static ItemStack getTotemFromHands(ServerPlayerEntity player) {
         for (Hand hand : Hand.values()) {
-            ItemStack stack = entity.getStackInHand(hand);
+            ItemStack stack = player.getStackInHand(hand);
             if (ModUtils.isVoidTotemOrAdditionalTotem(stack)) return stack;
         }
         return null;
@@ -130,15 +128,10 @@ public class ModUtils {
         return stack.isIn(ModConstants.ADDITIONAL_TOTEMS_TAG);
     }
 
-    public static ItemStack damageOrShrinkItemStack(ItemStack stack, LivingEntity entity) {
+    public static ItemStack damageOrShrinkItemStack(ItemStack stack, ServerPlayerEntity player) {
         var copiedStack = stack.copy();
         if (stack.isDamageable()) {
-            if (entity instanceof ServerPlayerEntity player)
             stack.damage(1, player.getRandom(), player);
-            else {
-                stack.setDamage(stack.getDamage() + 1);
-                if (stack.getDamage() > stack.getMaxDamage()) stack.decrement(1);
-            }
         } else {
             stack.decrement(1);
         }
@@ -152,43 +145,41 @@ public class ModUtils {
         }
     }
 
-    public static void teleportToSavePosition(LivingEntity livingEntity) {
-        long lastBlockPos = ((ILivingEntityMixinAccessor) livingEntity).getBlockPosAsLong();
+    public static void teleportToSavePosition(ServerPlayerEntity player) {
+        long lastBlockPos = ((IPlayerEntityMixinAccessor) player).getBlockPosAsLong();
         var teleportPos = BlockPos.fromLong(lastBlockPos);
 
-        var positionInRadius = positionInRadius(livingEntity, teleportPos);
+        var positionInRadius = positionInRadius(player, teleportPos);
         if (positionInRadius == null) {
-            livingEntity.teleport(teleportPos.getX(), livingEntity.world.getTopY() + VoidTotem.CONFIG.TELEPORT_HEIGHT_OFFSET, teleportPos.getZ());
-            if (livingEntity instanceof ServerPlayerEntity player)
+            player.teleport(teleportPos.getX(), player.world.getTopY() + VoidTotem.CONFIG.TELEPORT_HEIGHT_OFFSET, teleportPos.getZ());
             player.networkHandler.floatingTicks = 0;
         }
     }
 
-    public static BlockPos positionInRadius(LivingEntity livingEntity, BlockPos teleportPos) {
+    public static BlockPos positionInRadius(ServerPlayerEntity player, BlockPos teleportPos) {
         for (int i = 0; i < 16; i++) {
 
-            var maxBuildHeight = livingEntity.world.getTopY();
+            var maxBuildHeight = player.world.getTopY();
 
-            var x = teleportPos.getX() + (livingEntity.getRandom().nextDouble() - 0.5D) * 4.0D;
-            var y = MathHelper.clamp(livingEntity.getRandom().nextInt() * maxBuildHeight, 0.0D, maxBuildHeight - 1);
-            var z = teleportPos.getZ() + (livingEntity.getRandom().nextDouble() - 0.5D) * 4.0;
+            var x = teleportPos.getX() + (player.getRandom().nextDouble() - 0.5D) * 4.0D;
+            var y = MathHelper.clamp(player.getRandom().nextInt() * maxBuildHeight, 0.0D, maxBuildHeight - 1);
+            var z = teleportPos.getZ() + (player.getRandom().nextDouble() - 0.5D) * 4.0;
 
             var pos = new BlockPos(x, y, z);
-            if (livingEntity.teleport(x, y, z, true)) {
+            if (player.teleport(x, y, z, true)) {
                 return pos;
             }
         }
         return null;
     }
 
-    public static void sendTotemEffectPacket(ItemStack stack, LivingEntity entity) {
+    public static void sendTotemEffectPacket(ItemStack stack, ServerPlayerEntity player) {
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeItemStack(stack);
-        buf.writeInt(entity.getId());
-        if (entity instanceof ServerPlayerEntity player)
+        buf.writeInt(player.getId());
         ServerPlayNetworking.send(player, ModConstants.IDENTIFIER_TOTEM_EFFECT_PACKET, buf);
-        for (ServerPlayerEntity player2 : PlayerLookup.tracking((ServerWorld) entity.world,
-                entity.getBlockPos())) {
+        for (ServerPlayerEntity player2 : PlayerLookup.tracking((ServerWorld) player.world,
+                player.getBlockPos())) {
             ServerPlayNetworking.send(player2, ModConstants.IDENTIFIER_TOTEM_EFFECT_PACKET, buf);
         }
     }
