@@ -6,7 +6,7 @@ displayURL = "https://www.curseforge.com/minecraft/mc-mods/voidtotem" #optional
 logoFile = "logo.png" #optional
 logoBlur = false
 authors = "Affehund" #optional
-credits = "Jab125 for events and supporting non-player entities"
+credits = "Jab125 for events"
 [[mods]] #mandatory
 modId = "voidtotem" #mandatory
 version = "${file.jarVersion}" #mandatory
