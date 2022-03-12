@@ -43,7 +43,9 @@ public class ModUtils {
 
                 if (stack != null) {
                     ActionResult result = ModEvents.VOID_TOTEM_EVENT.invoker().interact(stack, livingEntity, source);
-                    if (result.equals(ActionResult.FAIL)) return true;
+                    // if (result.equals(ActionResult.FAIL)) return true; // no longer needed
+                    if (result.equals(ActionResult.CONSUME)) return false;
+                    if (result.equals(ActionResult.CONSUME_PARTIAL)) return true;
                     giveUseStatAndCriterion(stack, player);
                     stack = damageOrShrinkItemStack(stack, player);
 
