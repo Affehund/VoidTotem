@@ -2,6 +2,7 @@ package com.affehund.voidtotem.core;
 
 import com.affehund.voidtotem.ModConstants;
 import com.affehund.voidtotem.VoidTotem;
+import com.affehund.voidtotem.api.VoidTotemEvent;
 import com.affehund.voidtotem.core.network.PacketHandler;
 import com.affehund.voidtotem.core.network.TotemEffectPacket;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -13,6 +14,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.fml.ModList;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.SlotResult;
@@ -35,6 +38,10 @@ public class ModUtils {
                 ItemStack stack = getTotemItemStack(player);
 
                 if (stack != null) {
+                    var event = new VoidTotemEvent(stack, livingEntity, source);
+                    MinecraftForge.EVENT_BUS.post(event);
+                    if (event.getResult().equals(Event.Result.ALLOW)) return true;
+                    if (event.getResult().equals(Event.Result.DENY)) return false;
                     giveUseStatAndCriterion(stack, player);
                     stack = damageOrShrinkItemStack(stack, player);
 
