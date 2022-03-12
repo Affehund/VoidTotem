@@ -45,8 +45,7 @@ public class TotemEffectPacket {
         mc.particleEngine.createTrackingEmitter(entity, ParticleTypes.TOTEM_OF_UNDYING, 30);
         var level = mc.level;
         if (level != null) {
-            level.playLocalSound(entity.getX(), entity.getY(), entity.getZ(), SoundEvents.TOTEM_USE,
-                    entity.getSoundSource(), 1.0F, 1.0F, false);
+            level.playLocalSound(entity.getX(), entity.getY(), entity.getZ(), SoundEvents.TOTEM_USE, entity.getSoundSource(), 1.0F, 1.0F, false);
         }
 
         if (entity == mc.player) {

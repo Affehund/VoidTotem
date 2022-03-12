@@ -5,16 +5,15 @@ import com.affehund.voidtotem.core.ModUtils;
 import com.affehund.voidtotem.core.VoidTotemConfig;
 import com.affehund.voidtotem.core.network.PacketHandler;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.entries.LootTableReference;
 import net.minecraftforge.api.distmarker.Dist;
@@ -25,14 +24,12 @@ import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.LootTableLoadEvent;
-import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.InterModComms;
-import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -59,25 +56,25 @@ public class VoidTotem {
 
     public static VoidTotem INSTANCE;
 
-    final IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-    final IEventBus forgeEventBus = MinecraftForge.EVENT_BUS;
-
     public VoidTotem() {
         INSTANCE = this;
-        LOGGER.debug("Loading up {}!", ModConstants.MOD_NAME);
+        LOGGER.debug("Loading up {}...", ModConstants.MOD_NAME);
 
         if (ModUtils.isModLoaded(ModConstants.CURIOS_MOD_ID)) {
             InterModComms.sendTo(ModConstants.CURIOS_MOD_ID, SlotTypeMessage.REGISTER_TYPE, () -> SlotTypePreset.CHARM.getMessageBuilder().build());
             VoidTotem.LOGGER.debug("Enqueued IMC to {}", ModConstants.CURIOS_MOD_ID);
         }
 
+        var modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+
         modEventBus.addListener(this::gatherData);
         ITEMS.register(modEventBus);
 
+        var forgeEventBus = MinecraftForge.EVENT_BUS;
         forgeEventBus.register(this);
-        forgeEventBus.addListener(this::livingHurt);
         forgeEventBus.addListener(this::livingFall);
-        forgeEventBus.addListener(this::playerTick);
+        forgeEventBus.addListener(this::livingHurt);
+        forgeEventBus.addListener(this::livingTick);
         forgeEventBus.addGenericListener(ItemStack.class, this::attachCaps);
 
         PacketHandler.registerMessages();
@@ -121,8 +118,7 @@ public class VoidTotem {
     public void loadLootTables(LootTableLoadEvent event) {
         if (VoidTotemConfig.COMMON_CONFIG.ADD_END_CITY_TREASURE.get()) {
             if (event.getName().equals(ModConstants.LOCATION_END_CITY_TREASURE)) {
-                LOGGER.debug("Injecting loot table {} from {}", ModConstants.LOCATION_END_CITY_TREASURE.toString(),
-                        ModConstants.MOD_ID);
+                LOGGER.debug("Injecting loot table {} from {}", ModConstants.LOCATION_END_CITY_TREASURE.toString(), ModConstants.MOD_ID);
                 event.getTable().addPool(LootPool.lootPool()
                         .add(LootTableReference.lootTableReference(ModConstants.LOCATION_END_CITY_TREASURE_INJECTION))
                         .name(ModConstants.MOD_ID + "_injection").build());
@@ -150,39 +146,20 @@ public class VoidTotem {
     }
 
     private void livingFall(LivingFallEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
-            if (player.getPersistentData().getBoolean(ModConstants.NBT_TAG)) {
-                player.connection.aboveGroundTickCount = 0;
+        if (event.getEntity() instanceof LivingEntity livingEntity) {
+            if (livingEntity.getPersistentData().getBoolean(ModConstants.IS_FALL_DAMAGE_IMMUNE)) {
+                if (livingEntity instanceof ServerPlayer player) player.connection.aboveGroundTickCount = 0;
                 event.setDamageMultiplier(0f);
-                player.getPersistentData().putBoolean(ModConstants.NBT_TAG, false);
+                livingEntity.getPersistentData().putBoolean(ModConstants.IS_FALL_DAMAGE_IMMUNE, false);
                 event.setCanceled(true);
             }
         }
     }
 
-    private void playerTick(TickEvent.PlayerTickEvent event) {
-        if (event.side == LogicalSide.SERVER && event.phase == TickEvent.Phase.START) {
-            if (event.player instanceof ServerPlayer player) {
-
-                BlockPos pos = player.blockPosition();
-
-                long lastPosLong = player.getPersistentData().getLong(ModConstants.LAST_BLOCK_POS);
-                BlockPos lastPos = BlockPos.of(lastPosLong);
-                if (player.level.getBlockState(pos.below()).canOcclude()) {
-                    if (!lastPos.equals(pos)) {
-                        player.getPersistentData().putLong(ModConstants.LAST_BLOCK_POS, pos.asLong());
-                    }
-                }
-
-                if (player.getPersistentData().getBoolean(ModConstants.NBT_TAG)) {
-                    player.connection.aboveGroundTickCount = 0;
-                    if (player.isInWater() || player.getAbilities().flying || player.getAbilities().mayfly
-                            || player.level.getBlockState(pos).getBlock() == Blocks.COBWEB) {
-                        player.getPersistentData().putBoolean(ModConstants.NBT_TAG, false);
-                    }
-                }
-            }
-        }
+    private void livingTick(LivingEvent.LivingUpdateEvent event) {
+        var livingEntity = event.getEntityLiving();
+        ModUtils.setLastSaveBlockPos(livingEntity);
+        ModUtils.resetFallDamageImmunity(livingEntity);
     }
 
     private void livingHurt(LivingHurtEvent event) {

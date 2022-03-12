@@ -129,7 +129,7 @@ public class ModDataGeneration {
                             new TranslatableComponent(ModConstants.ADVANCEMENT_VOID_TOTEM_DESC),
                             null, FrameType.GOAL, true, true, false)
                     .addCriterion("used_void_totem", UsedTotemTrigger.TriggerInstance.usedTotem(VoidTotem.VOID_TOTEM_ITEM.get()))
-                    .save(consumer, ModConstants.ADVANCEMENT_ADVENTURE_VOID_TOTEM_PATH);
+                    .save(consumer, new ResourceLocation(ModConstants.MOD_ID, ModConstants.ADVANCEMENT_ADVENTURE_VOID_TOTEM_PATH), existingFileHelper);
         }
     }
 
