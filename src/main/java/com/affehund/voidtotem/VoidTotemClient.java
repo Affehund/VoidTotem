@@ -16,14 +16,12 @@ import net.minecraft.util.Formatting;
 
 import java.util.List;
 
-import static com.affehund.voidtotem.VoidTotem.CONFIG;
-
 @Environment(EnvType.CLIENT)
 public class VoidTotemClient implements ClientModInitializer {
     private static void getTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip) {
-        if (CONFIG.SHOW_TOTEM_TOOLTIP) {
+        if (VoidTotem.CONFIG.SHOW_TOTEM_TOOLTIP) {
             Item item = stack.getItem();
-            if (item.equals(VoidTotem.VOID_TOTEM_ITEM) || (ModUtils.isAdditionalTotem(stack))) {
+            if (item.equals(VoidTotem.VOID_TOTEM_ITEM) || ModUtils.isAdditionalTotem(stack)) {
                 tooltip.add(new TranslatableText(ModConstants.TOOLTIP_VOID_TOTEM).formatted(Formatting.GREEN));
             }
         }

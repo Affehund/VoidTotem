@@ -8,9 +8,8 @@ import net.minecraft.util.registry.Registry;
 public final class ModConstants {
     public static final String MOD_ID = "voidtotem";
     public static final String MOD_NAME = "Void Totem";
-    public static final String NBT_TAG = MOD_ID + "_living_falling";
-    public static final String LAST_BLOCK_POS = MOD_ID + "_last_block_pos";
-    public static final String COMMON_CONFIG_NAME = "/" + MOD_ID + ".json";
+    public static final String IS_FALL_DAMAGE_IMMUNE = MOD_NAME + "IsFallDamageImmune";
+    public static final String LAST_SAVE_BLOCK_POS = MOD_NAME + "LastSaveBlockPos";
 
     public static final String ITEM_VOID_TOTEM = "totem_of_void_undying";
     public static final String TOOLTIP_VOID_TOTEM = "tooltip." + MOD_ID + "." + ITEM_VOID_TOTEM;

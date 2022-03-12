@@ -21,7 +21,7 @@ public class VoidTotemConfig implements ConfigData {
     public Boolean NEEDS_TOTEM = true;
 
     @Comment("This sets whether a tooltip is shown on the totem.")
-    public Boolean SHOW_TOTEM_TOOLTIP = true;
+    public Boolean SHOW_TOTEM_TOOLTIP = false;
 
     @Comment("This sets the height offset you will be teleported when you can't be placed on a block.")
     @ConfigEntry.BoundedDiscrete(min = 0, max = 1024)
