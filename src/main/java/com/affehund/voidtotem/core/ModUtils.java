@@ -60,6 +60,7 @@ public class ModUtils {
 
                 teleportToSavePosition(livingEntity);
                 sendTotemEffectPacket(stack, livingEntity);
+
                 return true;
             }
         }
@@ -148,17 +149,16 @@ public class ModUtils {
     }
 
     public static void teleportToSavePosition(LivingEntity livingEntity) {
-        long lastBlockPos = livingEntity.getPersistentData().getLong(ModConstants.LAST_SAVE_BLOCK_POS);
-        var teleportPos = BlockPos.of(lastBlockPos);
+        var lastPos = BlockPos.of(livingEntity.getPersistentData().getLong(ModConstants.LAST_SAVE_BLOCK_POS));
 
-        var positionInRadius = positionInRadius(livingEntity, teleportPos);
+        var positionInRadius = positionNearby(livingEntity, lastPos);
         if (positionInRadius == null) {
-            livingEntity.teleportTo(teleportPos.getX(), livingEntity.level.getMaxBuildHeight() + VoidTotemConfig.COMMON_CONFIG.TELEPORT_HEIGHT_OFFSET.get(), teleportPos.getZ());
+            livingEntity.teleportTo(lastPos.getX(), livingEntity.level.getMaxBuildHeight() + VoidTotemConfig.COMMON_CONFIG.TELEPORT_HEIGHT_OFFSET.get(), lastPos.getZ());
             if (livingEntity instanceof ServerPlayer player) player.connection.aboveGroundTickCount = 0;
         }
     }
 
-    public static BlockPos positionInRadius(LivingEntity livingEntity, BlockPos lastPos) {
+    public static BlockPos positionNearby(LivingEntity livingEntity, BlockPos lastPos) {
         BlockPos teleportPos = null;
         for (int i = 0; i < 16; i++) {
 

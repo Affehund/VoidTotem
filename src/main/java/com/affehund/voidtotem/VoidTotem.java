@@ -117,8 +117,9 @@ public class VoidTotem {
     @SubscribeEvent
     public void loadLootTables(LootTableLoadEvent event) {
         if (VoidTotemConfig.COMMON_CONFIG.ADD_END_CITY_TREASURE.get()) {
-            if (event.getName().equals(ModConstants.LOCATION_END_CITY_TREASURE)) {
-                LOGGER.debug("Injecting loot table {} from {}", ModConstants.LOCATION_END_CITY_TREASURE.toString(), ModConstants.MOD_ID);
+            var name = event.getName();
+            if (name.equals(ModConstants.LOCATION_END_CITY_TREASURE)) {
+                LOGGER.debug("Injecting loot table {} from {}", name, ModConstants.MOD_ID);
                 event.getTable().addPool(LootPool.lootPool()
                         .add(LootTableReference.lootTableReference(ModConstants.LOCATION_END_CITY_TREASURE_INJECTION))
                         .name(ModConstants.MOD_ID + "_injection").build());

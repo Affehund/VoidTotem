@@ -179,7 +179,7 @@ public class ModDataGeneration {
             }
 
             private void createInjectPools(BiConsumer<ResourceLocation, LootTable.Builder> consumer, List<ResourceLocation> list, LootTable.Builder builder) {
-                list.forEach(reLoc -> consumer.accept(new ResourceLocation(ModConstants.MOD_ID, "inject/" + reLoc.getPath()), builder));
+                list.forEach(resourceLocation -> consumer.accept(new ResourceLocation(ModConstants.MOD_ID, "inject/" + resourceLocation.getPath()), builder));
             }
         }
     }

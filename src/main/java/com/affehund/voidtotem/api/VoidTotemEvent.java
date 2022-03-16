@@ -1,8 +1,8 @@
 package com.affehund.voidtotem.api;
 
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.eventbus.api.Cancelable;
 import net.minecraftforge.eventbus.api.Event;
 
@@ -13,9 +13,11 @@ import net.minecraftforge.eventbus.api.Event;
 @Cancelable
 @Event.HasResult
 public class VoidTotemEvent extends Event {
+
     private final ItemStack itemStack;
     private final LivingEntity entity;
     private final DamageSource source;
+
     public VoidTotemEvent(ItemStack itemStack, LivingEntity entity, DamageSource source) {
         this.itemStack = itemStack;
         this.entity = entity;

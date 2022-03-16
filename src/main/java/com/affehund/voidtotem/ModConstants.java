@@ -19,8 +19,8 @@ public class ModConstants {
     public static final String ADVANCEMENT_VOID_TOTEM_TITLE = "advancements." + MOD_ID + ".adventure." + ITEM_VOID_TOTEM + ".title";
     public static final String ADVANCEMENT_VOID_TOTEM_DESC = "advancements." + MOD_ID + ".adventure." + ITEM_VOID_TOTEM + ".description";
 
-    public static final ResourceLocation LOCATION_END_CITY_TREASURE = new ResourceLocation("chests/end_city_treasure");
-    public static final ResourceLocation LOCATION_END_CITY_TREASURE_INJECTION = new ResourceLocation(MOD_ID, "inject/chests/end_city_treasure");
+    public static final ResourceLocation LOCATION_END_CITY_TREASURE = new ResourceLocation("chests/pillager_outpost");
+    public static final ResourceLocation LOCATION_END_CITY_TREASURE_INJECTION = new ResourceLocation(MOD_ID, "inject/chests/pillager_outpost");
 
     public static final String ADDITIONAL_TOTEMS_TAG = "additional_totems";
 
