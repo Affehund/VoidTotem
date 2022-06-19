@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "voidtotem",
+  "version": "${version}",
+  "name": "Void Totem",
+  "description": "A totem that prevents you from dying in the void.",
+  "authors": [
+    "Affehund"
+  ],
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/voidtotem-fabric",
+    "issues": "https://github.com/Affehund/VoidTotem/issues",
+    "sources": "https://github.com/Affehund/VoidTotem"
+  },
+  "license": "GPL-3.0",
+  "icon": "logo.png",
+  "accessWidener": "voidtotem.accesswidener",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.affehund.voidtotem.VoidTotemFabric"
+    ],
+    "client": [
+      "com.affehund.voidtotem.VoidTotemClientFabric"
+    ],
+    "modmenu": [
+      "com.affehund.voidtotem.core.VoidTotemConfigMenu"
+    ]
+  },
+  "mixins": [
+    "voidtotem.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.14",
+    "fabric": "*",
+    "minecraft": "1.19.x",
+    "java": ">=17",
+    "cloth-config": ">=7.0.65"
+  }
+}
+  

@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "c": {
+      "item": "minecraft:chorus_fruit"
+    },
+    "e": {
+      "item": "minecraft:ender_eye"
+    },
+    "l": {
+      "item": "minecraft:lapis_lazuli"
+    },
+    "t": {
+      "item": "minecraft:totem_of_undying"
+    }
+  },
+  "pattern": [
+    "cec",
+    "ltl",
+    " e "
+  ],
+  "result": {
+    "item": "voidtotem:totem_of_void_undying"
+  }
+}

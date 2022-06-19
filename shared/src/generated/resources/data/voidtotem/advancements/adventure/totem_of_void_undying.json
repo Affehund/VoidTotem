@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:adventure/totem_of_undying",
+  "criteria": {
+    "used_void_totem": {
+      "conditions": {
+        "item": {
+          "items": [
+            "voidtotem:totem_of_void_undying"
+          ]
+        }
+      },
+      "trigger": "minecraft:used_totem"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "advancements.voidtotem.adventure.totem_of_void_undying.description"
+    },
+    "frame": "goal",
+    "hidden": false,
+    "icon": {
+      "item": "voidtotem:totem_of_void_undying"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancements.voidtotem.adventure.totem_of_void_undying.title"
+    }
+  },
+  "requirements": [
+    [
+      "used_void_totem"
+    ]
+  ]
+}
