@@ -103,7 +103,7 @@ dependencies {
     runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${minecraft_version}-${curios_version}")
     compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:${minecraft_version}-${curios_version}:api")
 
-    implementation fg.deobf("curse.maven:configured-457570:3822820")
+    implementation fg.deobf("curse.maven:configured-457570:3872190")
 
     compileOnly project(":shared")
 }
