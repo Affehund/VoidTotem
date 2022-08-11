@@ -6,7 +6,6 @@ import com.affehund.voidtotem.mixin.ServerGamePacketListenerImplAccessor;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
@@ -162,7 +161,7 @@ public class ModUtils {
 
     public static void playActivateAnimation(ItemStack itemStack, Entity entity) {
         var mc = Minecraft.getInstance();
-        mc.particleEngine.createTrackingEmitter(entity, ParticleTypes.TOTEM_OF_UNDYING, 30);
+        mc.particleEngine.createTrackingEmitter(entity, VoidTotem.PLATFORM.getVoidTotemParticle(), 30);
 
         var level = mc.level;
         if (level != null) {

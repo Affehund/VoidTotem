@@ -4,6 +4,7 @@ import com.affehund.voidtotem.api.VoidTotemEvent;
 import com.affehund.voidtotem.core.VoidTotemConfig;
 import com.affehund.voidtotem.core.network.PacketHandler;
 import com.affehund.voidtotem.core.network.TotemEffectPacket;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -59,6 +60,11 @@ public class ForgePlatformHelper implements PlatformHelper {
             PacketHandler.sendToPlayer(new TotemEffectPacket(itemStack, player), player);
         }
         PacketHandler.sendToAllTracking(new TotemEffectPacket(itemStack, livingEntity), livingEntity);
+    }
+
+    @Override
+    public ParticleOptions getVoidTotemParticle() {
+        return VoidTotemForge.VOID_TOTEM_PARTICLE.get();
     }
 
     @Override

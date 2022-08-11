@@ -1,18 +1,17 @@
 package com.affehund.voidtotem;
 
-import com.affehund.voidtotem.api.VoidTotemEventCallback;
 import com.affehund.voidtotem.core.VoidTotemConfig;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.Toml4jConfigSerializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.loot.v2.LootTableEvents;
+import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.minecraft.core.Registry;
+import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 
@@ -25,6 +24,8 @@ public class VoidTotemFabric implements ModInitializer {
 
     public static VoidTotemConfig CONFIG;
 
+    public static final SimpleParticleType VOID_TOTEM_PARTICLE = FabricParticleTypes.simple();
+
     @Override
     public void onInitialize() {
 
@@ -32,6 +33,8 @@ public class VoidTotemFabric implements ModInitializer {
 
         Registry.register(Registry.ITEM, new ResourceLocation(ModConstants.MOD_ID, ModConstants.ITEM_VOID_TOTEM),
                 VOID_TOTEM_ITEM);
+
+        Registry.register(Registry.PARTICLE_TYPE, new ResourceLocation(ModConstants.MOD_ID, "void_totem"), VOID_TOTEM_PARTICLE);
 
         AutoConfig.register(VoidTotemConfig.class, Toml4jConfigSerializer::new);
         CONFIG = AutoConfig.getConfigHolder(VoidTotemConfig.class).getConfig();
@@ -41,13 +44,6 @@ public class VoidTotemFabric implements ModInitializer {
                 var pools = List.of(lootManager.get(ModConstants.END_CITY_TREASURE_INJECTION_LOCATION).pools);
                 tableBuilder.pools(pools);
             }
-        });
-
-
-        VoidTotemEventCallback.EVENT.register((itemStack, livingEntity, source) -> {
-            if (itemStack.is(Items.DIAMOND)) return InteractionResult.CONSUME;
-            if (itemStack.is(Items.GOLD_INGOT)) return InteractionResult.CONSUME_PARTIAL;
-            return InteractionResult.PASS;
         });
     }
 }

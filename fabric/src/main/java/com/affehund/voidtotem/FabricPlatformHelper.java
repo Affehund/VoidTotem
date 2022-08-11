@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Tuple;
@@ -63,6 +64,11 @@ public class FabricPlatformHelper implements PlatformHelper {
         for (ServerPlayer player : PlayerLookup.tracking((ServerLevel) livingEntity.level, livingEntity.blockPosition())) {
             ServerPlayNetworking.send(player, ModConstants.TOTEM_EFFECT_PACKET_LOCATION, buf);
         }
+    }
+
+    @Override
+    public ParticleOptions getVoidTotemParticle() {
+        return VoidTotemFabric.VOID_TOTEM_PARTICLE;
     }
 
     @Override

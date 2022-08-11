@@ -1,5 +1,6 @@
 package com.affehund.voidtotem;
 
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -21,6 +22,8 @@ public interface PlatformHelper {
     Item getVoidTotemItem();
 
     void sendTotemEffectPacket(ItemStack itemStack, LivingEntity livingEntity);
+
+    ParticleOptions getVoidTotemParticle();
 
     /*
      * Config methods

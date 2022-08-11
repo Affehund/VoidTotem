@@ -8,6 +8,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -25,10 +26,15 @@ public class VoidTotemClientFabric implements ClientModInitializer {
         ItemTooltipCallback.EVENT.register((itemStack, context, tooltip) -> VoidTotem.onItemTooltip(itemStack, tooltip));
 
         registerVoidTotemPacket();
+        registerVoidTotemParticle();
 
         if (ModUtils.isModLoaded(ModConstants.TRINKETS_MOD_ID) && VoidTotemFabric.CONFIG.DISPLAY_TOTEM_ON_CHEST) {
             renderVoidTotemTrinket();
         }
+    }
+
+    private void registerVoidTotemParticle() {
+        ParticleFactoryRegistry.getInstance().register(VoidTotemFabric.VOID_TOTEM_PARTICLE, VoidTotemParticle.Provider::new);
     }
 
     private void registerVoidTotemPacket() {
