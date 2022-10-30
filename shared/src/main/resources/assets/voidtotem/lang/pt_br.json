@@ -1,0 +1,17 @@
+{
+    "_comment": "Translation (pt_br) by FITFC",
+    "advancements.voidtotem.adventure.totem_of_void_undying.description": "Use um Totem do Void Imortalidade para enganar a morte ao cair no vazio",
+    "advancements.voidtotem.adventure.totem_of_void_undying.title": "Pós-mortal 2",
+    "item.voidtotem.totem_of_void_undying": "Totem do Void da Imortalidade",
+    "text.autoconfig.voidtotem.option.ADD_END_CITY_TREASURE": "Adicionar tesouro da cidade final",
+    "text.autoconfig.voidtotem.option.BLACKLISTED_DIMENSIONS": "Dimensões na lista negra",
+    "text.autoconfig.voidtotem.option.DISPLAY_TOTEM_ON_CHEST": "Mostrar totem no baú",
+    "text.autoconfig.voidtotem.option.GIVE_TOTEM_EFFECTS": "Dê efeitos de totem",
+    "text.autoconfig.voidtotem.option.IS_INVERTED_BLACKLIST": "É lista negra invertida",
+    "text.autoconfig.voidtotem.option.NEEDS_TOTEM": "Precisa de totem",
+    "text.autoconfig.voidtotem.option.SHOW_TOTEM_TOOLTIP": "Mostrar dica de ferramenta do totem",
+    "text.autoconfig.voidtotem.option.TELEPORT_HEIGHT_OFFSET": "Deslocamento de altura de teletransporte",
+    "text.autoconfig.voidtotem.option.USE_TOTEM_FROM_INVENTORY": "Use o totem do inventário",
+    "tooltip.voidtotem.totem_of_void_undying": "Coloque em sua mão principal / secundária para evitar morrer se você cair no vazio.",
+    "trinkets.slot.charm.charm": "Charme"
+  }
