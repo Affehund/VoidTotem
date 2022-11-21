@@ -1,0 +1,17 @@
+{
+  "_comment": "Translation (uk_ua) by Altegar",
+  "advancements.voidtotem.adventure.totem_of_void_undying.description": "Скористайтеся тотемом порожнечі, щоб обдурити смерть під час падіння в порожнечу",
+  "advancements.voidtotem.adventure.totem_of_void_undying.title": "Postmortal 2",
+  "item.voidtotem.totem_of_void_undying": "Тотем порожнечі",
+  "text.autoconfig.voidtotem.option.ADD_END_CITY_TREASURE": "Додати скарб до міста Енду",
+  "text.autoconfig.voidtotem.option.BLACKLISTED_DIMENSIONS": "Виміри в чорному списку",
+  "text.autoconfig.voidtotem.option.DISPLAY_TOTEM_ON_CHEST": "Показати тотем на грудях",
+  "text.autoconfig.voidtotem.option.GIVE_TOTEM_EFFECTS": "Дати ефекти тотема",
+  "text.autoconfig.voidtotem.option.IS_INVERTED_BLACKLIST": "Чи інвертований чорний список",
+  "text.autoconfig.voidtotem.option.NEEDS_TOTEM": "Потрібен тотем",
+  "text.autoconfig.voidtotem.option.SHOW_TOTEM_TOOLTIP": "Показати підказку тотема",
+  "text.autoconfig.voidtotem.option.TELEPORT_HEIGHT_OFFSET": "Зміщення висоти телепортації",
+  "text.autoconfig.voidtotem.option.USE_TOTEM_FROM_INVENTORY": "Використовувати тотем з інвентаря",
+  "tooltip.voidtotem.totem_of_void_undying": "Помістіть у будь-яку руку, щоб запобігти смерті при падінні в порожнечу.",
+  "trinkets.slot.charm.charm": "Charm"
+}
