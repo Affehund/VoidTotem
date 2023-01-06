@@ -14,12 +14,12 @@ public class VoidTotem {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(ModConstants.MOD_NAME);
 
-    public static final PlatformHelper PLATFORM = loadPlatform(PlatformHelper.class);
+    public static final PlatformHelper PLATFORM = loadPlatform();
 
-    private static <T> T loadPlatform(Class<T> clazz) {
-        var loadedService = ServiceLoader.load(clazz)
+    private static <T> T loadPlatform() {
+        var loadedService = ServiceLoader.load((Class<T>) PlatformHelper.class)
                 .findFirst()
-                .orElseThrow(() -> new NullPointerException("Failed to load service for " + clazz.getName()));
+                .orElseThrow(() -> new NullPointerException("Failed to load service for " + PlatformHelper.class.getName()));
         return loadedService;
     }
 

@@ -6,8 +6,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.eventbus.api.Cancelable;
 import net.minecraftforge.eventbus.api.Event;
 
-import net.minecraftforge.eventbus.api.Event.Result;
-
 @Cancelable
 @Event.HasResult
 public class VoidTotemEvent extends Event {

@@ -8,20 +8,21 @@ import com.affehund.voidtotem.core.network.PacketHandler;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.*;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.entries.LootTableReference;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.common.data.ForgeAdvancementProvider;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.event.CreativeModeTabEvent;
 import net.minecraftforge.event.LootTableLoadEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -43,6 +44,8 @@ import top.theillusivec4.curios.api.type.capability.ICurio;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.List;
 
 @Mod(ModConstants.MOD_ID)
 public class VoidTotemForge {
@@ -63,6 +66,7 @@ public class VoidTotemForge {
         var modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         modEventBus.addListener(this::gatherData);
         modEventBus.addListener(this::clientSetup);
+        modEventBus.addListener(this::buildContents);
         ITEMS.register(modEventBus);
         PARTICLE_TYPES.register(modEventBus);
 
@@ -72,17 +76,11 @@ public class VoidTotemForge {
     }
 
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, ModConstants.MOD_ID);
-    public static final RegistryObject<Item> VOID_TOTEM_ITEM = ITEMS.register(ModConstants.ITEM_VOID_TOTEM, () -> new Item(new Item.Properties().stacksTo(1).tab(CreativeModeTab.TAB_COMBAT).rarity(Rarity.UNCOMMON)));
+    public static final RegistryObject<Item> VOID_TOTEM_ITEM = ITEMS.register(ModConstants.ITEM_VOID_TOTEM, () -> new Item(new Item.Properties().stacksTo(1).rarity(Rarity.UNCOMMON)));
 
     public static final DeferredRegister<ParticleType<?>> PARTICLE_TYPES = DeferredRegister.create(ForgeRegistries.PARTICLE_TYPES, ModConstants.MOD_ID);
     public static final RegistryObject<SimpleParticleType> VOID_TOTEM_PARTICLE =
             PARTICLE_TYPES.register("void_totem", () -> new SimpleParticleType(true));
-
-    private void clientSetup(FMLClientSetupEvent event) {
-        if (ModUtils.isModLoaded(ModConstants.CURIOS_MOD_ID) && VoidTotemConfig.DISPLAY_TOTEM_ON_CHEST.get()) {
-            CuriosRendererRegistry.register(VOID_TOTEM_ITEM.get(), VoidTotemCuriosRenderer::new);
-        }
-    }
 
     private void attachCaps(AttachCapabilitiesEvent<ItemStack> event) {
         if (ModUtils.isModLoaded(ModConstants.CURIOS_MOD_ID)) {
@@ -112,22 +110,38 @@ public class VoidTotemForge {
         }
     }
 
+    private void buildContents(CreativeModeTabEvent.BuildContents event) {
+        if (event.getTab() == CreativeModeTabs.COMBAT) {
+            event.getEntries().putAfter(new ItemStack(Items.TOTEM_OF_UNDYING), new ItemStack(VOID_TOTEM_ITEM.get()), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+        }
+    }
+
+    private void clientSetup(FMLClientSetupEvent event) {
+        if (ModUtils.isModLoaded(ModConstants.CURIOS_MOD_ID) && VoidTotemConfig.DISPLAY_TOTEM_ON_CHEST.get()) {
+            CuriosRendererRegistry.register(VOID_TOTEM_ITEM.get(), VoidTotemCuriosRenderer::new);
+        }
+    }
+
     private void gatherData(GatherDataEvent event) {
         var generator = event.getGenerator();
+        var packOutput = generator.getPackOutput();
+        var lookup = event.getLookupProvider();
         var existingFileHelper = event.getExistingFileHelper();
         var isClientProvider = event.includeClient();
+        var isServerProvider = event.includeServer();
+        var blockTagsGen = new VoidTotemDataGeneration.BlockTagsGen(packOutput, lookup, existingFileHelper);
 
         //  Server Side generators
-        var blockTagsProvider = new VoidTotemDataGeneration.BlockTagsGen(generator, ModConstants.MOD_ID, existingFileHelper);
-        generator.addProvider(isClientProvider, new VoidTotemDataGeneration.ItemTagsGen(generator, blockTagsProvider, ModConstants.MOD_ID, existingFileHelper));
-        generator.addProvider(isClientProvider, new VoidTotemDataGeneration.AdvancementGen(generator, existingFileHelper));
-        generator.addProvider(isClientProvider, new VoidTotemDataGeneration.LootTableGen(generator));
-        generator.addProvider(isClientProvider, new VoidTotemDataGeneration.RecipeGen(generator));
+        generator.addProvider(isServerProvider, new VoidTotemDataGeneration.ItemTagsGen(packOutput, lookup, blockTagsGen, existingFileHelper));
+        generator.addProvider(isServerProvider, new ForgeAdvancementProvider(packOutput, lookup, existingFileHelper, List.of(new VoidTotemDataGeneration.AdvancementGen())));
+        generator.addProvider(isServerProvider, new LootTableProvider(packOutput, Collections.emptySet(),
+                List.of(new LootTableProvider.SubProviderEntry(VoidTotemDataGeneration.LootTableGen::new, LootContextParamSets.CHEST))));
+        generator.addProvider(isServerProvider, new VoidTotemDataGeneration.RecipeGen(packOutput));
 
         //  Client Side generators
-        generator.addProvider(isClientProvider, new VoidTotemDataGeneration.LanguageGen(generator, "de_de"));
-        generator.addProvider(isClientProvider, new VoidTotemDataGeneration.LanguageGen(generator, "en_us"));
-        generator.addProvider(isClientProvider, new VoidTotemDataGeneration.ItemModelGen(generator, ModConstants.MOD_ID, existingFileHelper));
+        generator.addProvider(isClientProvider, new VoidTotemDataGeneration.LanguageGen(packOutput, "de_de"));
+        generator.addProvider(isClientProvider, new VoidTotemDataGeneration.LanguageGen(packOutput, "en_us"));
+        generator.addProvider(isClientProvider, new VoidTotemDataGeneration.ItemModelGen(packOutput, existingFileHelper));
     }
 
     @SubscribeEvent

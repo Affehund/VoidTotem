@@ -31,6 +31,7 @@ public class VoidTotemClientFabric implements ClientModInitializer {
         if (ModUtils.isModLoaded(ModConstants.TRINKETS_MOD_ID) && VoidTotemFabric.CONFIG.DISPLAY_TOTEM_ON_CHEST) {
             renderVoidTotemTrinket();
         }
+
     }
 
     private void registerVoidTotemParticle() {
