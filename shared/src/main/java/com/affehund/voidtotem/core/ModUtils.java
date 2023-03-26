@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -34,7 +35,7 @@ public class ModUtils {
     public static boolean canProtectFromVoid(LivingEntity livingEntity, DamageSource source) {
         var currentDim = livingEntity.level.dimension().location().toString();
         var isBlacklistedDimension = VoidTotem.PLATFORM.isInvertedBlacklist() != VoidTotem.PLATFORM.getBlacklistedDimensions().contains(currentDim);
-        var isInVoid = source.equals(DamageSource.OUT_OF_WORLD) && livingEntity.getY() < livingEntity.level.getMinBuildHeight();
+        var isInVoid = source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && livingEntity.getY() < livingEntity.level.getMinBuildHeight();
         var isAwaitingPositionFromClient = livingEntity instanceof ServerPlayer player && ((ServerGamePacketListenerImplAccessor) player.connection).getAwaitingPositionFromClient() != null;
 
         if (!isBlacklistedDimension && isInVoid && !isAwaitingPositionFromClient) {
@@ -150,7 +151,7 @@ public class ModUtils {
             var y = Mth.clamp(lastPos.getY() + (double) (livingEntity.getRandom().nextInt(16) - 8), world.getMinBuildHeight(), world.getMaxBuildHeight() - 1);
             var z = lastPos.getZ() + (livingEntity.getRandom().nextDouble() - 0.5D) * 16.0D;
 
-            var pos = new BlockPos(x, y, z);
+            var pos = new BlockPos((int) x, (int) y, (int) z);
             if (livingEntity.randomTeleport(x, y, z, true)) {
                 teleportPos = pos;
                 break;

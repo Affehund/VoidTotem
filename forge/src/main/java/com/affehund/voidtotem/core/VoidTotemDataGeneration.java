@@ -147,7 +147,7 @@ public class VoidTotemDataGeneration {
     public static class ItemTagsGen extends ItemTagsProvider {
 
         public ItemTagsGen(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> lookupProvider, BlockTagsProvider blockTagsProvider, ExistingFileHelper existingFileHelper) {
-            super(packOutput, lookupProvider, blockTagsProvider, ModConstants.MOD_ID, existingFileHelper);
+            super(packOutput, lookupProvider, blockTagsProvider.contentsGetter(), ModConstants.MOD_ID, existingFileHelper);
         }
 
         @Override

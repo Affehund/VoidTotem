@@ -9,10 +9,10 @@ import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ParticleFactoryRegistry {
-    
+
     @SubscribeEvent
     public static void onParticleFactoryRegistration(RegisterParticleProvidersEvent event) {
-        event.register(VoidTotemForge.VOID_TOTEM_PARTICLE.get(),
+        event.registerSpriteSet(VoidTotemForge.VOID_TOTEM_PARTICLE.get(),
                 VoidTotemParticle.Provider::new);
     }
 }

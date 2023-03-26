@@ -21,7 +21,7 @@ public class PacketHandler {
     }
 
     public static <MSG> void sendToPlayer(MSG message, ServerPlayer player) {
-        MOD_CHANNEL.sendTo(message, player.connection.getConnection(), NetworkDirection.PLAY_TO_CLIENT);
+        MOD_CHANNEL.sendTo(message, player.connection.connection, NetworkDirection.PLAY_TO_CLIENT);
     }
 
     public static <MSG> void sendToAllTracking(MSG message, LivingEntity entity) {
