@@ -14,6 +14,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import net.minecraft.world.level.storage.loot.LootDataType;
 
 import java.util.List;
 
@@ -42,7 +43,8 @@ public class VoidTotemFabric implements ModInitializer {
 
         LootTableEvents.MODIFY.register((resourceManager, lootManager, id, tableBuilder, source) -> {
             if (CONFIG.ADD_END_CITY_TREASURE && id.equals(BuiltInLootTables.END_CITY_TREASURE)) {
-                var pools = List.of(lootManager.get(ModConstants.END_CITY_TREASURE_INJECTION_LOCATION).pools);
+//                var pools = List.of(lootManager.get(ModConstants.END_CITY_TREASURE_INJECTION_LOCATION).pools);
+                var pools = List.of(lootManager.getElement(LootDataType.TABLE, ModConstants.END_CITY_TREASURE_INJECTION_LOCATION).pools);
                 tableBuilder.pools(pools);
             }
         });

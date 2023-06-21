@@ -7,6 +7,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.dimension.DimensionType;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,6 +19,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class LivingEntityMixin implements ILivingEntityMixin {
     private boolean isFallDamageImmune;
     private long lastSaveBlockPos;
+
+    private DimensionType lastSaveBlockDim;
 
     @Inject(method = "checkTotemDeathProtection(Lnet/minecraft/world/damagesource/DamageSource;)Z", at = @At("HEAD"), cancellable = true)
     private void checkTotemDeathProtection(DamageSource source, CallbackInfoReturnable<Boolean> cir) {
@@ -78,5 +81,15 @@ public class LivingEntityMixin implements ILivingEntityMixin {
     @Override
     public void setLastSaveBlockPosAsLong(long pos) {
         this.lastSaveBlockPos = pos;
+    }
+
+    @Override
+    public DimensionType getLastSaveBlockDim() {
+        return this.lastSaveBlockDim;
+    }
+
+    @Override
+    public void setLastSaveBlockDim(DimensionType dimensionType) {
+        this.lastSaveBlockDim = dimensionType;
     }
 }

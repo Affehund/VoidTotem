@@ -38,10 +38,10 @@ public class FabricPlatformHelper implements PlatformHelper {
     }
 
     @Override
-    public ItemStack getTotemFromAdditionalSlot(LivingEntity livingEntity, Predicate<ItemStack> filter) {
+    public ItemStack getTotemFromAdditionalSlot(LivingEntity livingEntity, Predicate<ItemStack> predicate) {
         if (isModLoaded(ModConstants.TRINKETS_MOD_ID)) {
             return TrinketsApi.getTrinketComponent(livingEntity).map(component -> {
-                List<Tuple<SlotReference, ItemStack>> res = component.getEquipped(filter);
+                List<Tuple<SlotReference, ItemStack>> res = component.getEquipped(predicate);
                 return res.size() > 0 ? res.get(0).getB() : null;
             }).orElse(null);
         }
@@ -61,7 +61,7 @@ public class FabricPlatformHelper implements PlatformHelper {
         if (livingEntity instanceof ServerPlayer player) {
             ServerPlayNetworking.send(player, ModConstants.TOTEM_EFFECT_PACKET_LOCATION, buf);
         }
-        for (ServerPlayer player : PlayerLookup.tracking((ServerLevel) livingEntity.level, livingEntity.blockPosition())) {
+        for (ServerPlayer player : PlayerLookup.tracking((ServerLevel) livingEntity.level(), livingEntity.blockPosition())) {
             ServerPlayNetworking.send(player, ModConstants.TOTEM_EFFECT_PACKET_LOCATION, buf);
         }
     }

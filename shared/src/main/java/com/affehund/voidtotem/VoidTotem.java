@@ -23,7 +23,6 @@ public class VoidTotem {
         return loadedService;
     }
 
-
     public static void init() {
         VoidTotem.LOGGER.info("Loading up {} ({})", ModConstants.MOD_NAME, PLATFORM.getPlatformName());
     }

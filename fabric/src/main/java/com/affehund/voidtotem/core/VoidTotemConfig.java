@@ -1,10 +1,10 @@
 package com.affehund.voidtotem.core;
 
-import blue.endless.jankson.Comment;
 import com.affehund.voidtotem.ModConstants;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
+import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ public class VoidTotemConfig implements ConfigData {
     public Boolean DISPLAY_TOTEM_ON_CHEST = true;
 
     @Comment("Whether you get the regeneration and absorption effect on the void totem execution. This also removes all previous effects.")
-    public Boolean GIVE_TOTEM_EFFECTS = false;
+    public Boolean GIVE_TOTEM_EFFECTS = true;
 
     @Comment("Whether the blacklist is inverted, meaning the void totem only works in whitelisted dimensions.")
     public Boolean IS_INVERTED_BLACKLIST = false;

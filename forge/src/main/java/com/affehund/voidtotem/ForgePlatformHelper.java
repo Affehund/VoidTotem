@@ -1,7 +1,8 @@
 package com.affehund.voidtotem;
 
 import com.affehund.voidtotem.api.VoidTotemEvent;
-import com.affehund.voidtotem.core.VoidTotemConfig;
+import com.affehund.voidtotem.core.VoidTotemClientConfig;
+import com.affehund.voidtotem.core.VoidTotemCommonConfig;
 import com.affehund.voidtotem.core.network.PacketHandler;
 import com.affehund.voidtotem.core.network.TotemEffectPacket;
 import net.minecraft.core.particles.ParticleOptions;
@@ -69,36 +70,36 @@ public class ForgePlatformHelper implements PlatformHelper {
 
     @Override
     public List<? extends String> getBlacklistedDimensions() {
-        return VoidTotemConfig.BLACKLISTED_DIMENSIONS.get();
+        return VoidTotemCommonConfig.BLACKLISTED_DIMENSIONS.get();
     }
 
     @Override
     public boolean giveTotemEffects() {
-        return VoidTotemConfig.GIVE_TOTEM_EFFECTS.get();
+        return VoidTotemCommonConfig.GIVE_TOTEM_EFFECTS.get();
     }
 
     @Override
     public boolean isInvertedBlacklist() {
-        return VoidTotemConfig.IS_INVERTED_BLACKLIST.get();
+        return VoidTotemCommonConfig.IS_INVERTED_BLACKLIST.get();
     }
 
     @Override
     public boolean needsTotem() {
-        return VoidTotemConfig.NEEDS_TOTEM.get();
+        return VoidTotemCommonConfig.NEEDS_TOTEM.get();
     }
 
     @Override
     public boolean showTotemTooltip() {
-        return VoidTotemConfig.SHOW_TOTEM_TOOLTIP.get();
+        return VoidTotemClientConfig.SHOW_TOTEM_TOOLTIP.get();
     }
 
     @Override
     public int teleportHeightOffset() {
-        return VoidTotemConfig.TELEPORT_HEIGHT_OFFSET.get();
+        return VoidTotemCommonConfig.TELEPORT_HEIGHT_OFFSET.get();
     }
 
     @Override
     public boolean useTotemFromInventory() {
-        return VoidTotemConfig.USE_TOTEM_FROM_INVENTORY.get();
+        return VoidTotemCommonConfig.USE_TOTEM_FROM_INVENTORY.get();
     }
 }

@@ -33,9 +33,9 @@ public class ModUtils {
     }
 
     public static boolean canProtectFromVoid(LivingEntity livingEntity, DamageSource source) {
-        var currentDim = livingEntity.level.dimension().location().toString();
+        var currentDim = livingEntity.level().dimension().location().toString();
         var isBlacklistedDimension = VoidTotem.PLATFORM.isInvertedBlacklist() != VoidTotem.PLATFORM.getBlacklistedDimensions().contains(currentDim);
-        var isInVoid = source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && livingEntity.getY() < livingEntity.level.getMinBuildHeight();
+        var isInVoid = source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && livingEntity.getY() < livingEntity.level().getMinBuildHeight();
         var isAwaitingPositionFromClient = livingEntity instanceof ServerPlayer player && ((ServerGamePacketListenerImplAccessor) player.connection).getAwaitingPositionFromClient() != null;
 
         if (!isBlacklistedDimension && isInVoid && !isAwaitingPositionFromClient) {
@@ -54,16 +54,13 @@ public class ModUtils {
                 itemStack = damageOrShrinkItemStack(itemStack, livingEntity);
 
                 if (livingEntity.isVehicle()) livingEntity.ejectPassengers();
-
                 livingEntity.stopRiding();
+
                 livingEntity.setHealth(1.0f);
+
                 ((ILivingEntityMixin) livingEntity).setFallDamageImmune(true);
 
-                if (VoidTotem.PLATFORM.giveTotemEffects()) {
-                    livingEntity.removeAllEffects();
-                    livingEntity.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 900, 1));
-                    livingEntity.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 100, 1));
-                }
+                addTotemEffects(livingEntity);
 
                 teleportToSavePosition(livingEntity);
                 VoidTotem.PLATFORM.sendTotemEffectPacket(itemStack, livingEntity);
@@ -131,30 +128,34 @@ public class ModUtils {
     }
 
     public static void teleportToSavePosition(LivingEntity livingEntity) {
-        var lastPos = BlockPos.of(((ILivingEntityMixin) livingEntity).getLastSaveBlockPosAsLong());
-
-        var positionInRadius = teleportToPositionNearby(livingEntity, lastPos);
-        if (positionInRadius == null) {
-            livingEntity.teleportTo(lastPos.getX(), livingEntity.level.getMaxBuildHeight() + VoidTotem.PLATFORM.teleportHeightOffset(), lastPos.getZ());
+        var nearLastPos = getNearLastPos(livingEntity);
+        if(nearLastPos != null) {
+            livingEntity.teleportTo(nearLastPos.getX(), nearLastPos.getY(), nearLastPos.getZ());
+        } else {
+            var currentPos = livingEntity.blockPosition();
+            livingEntity.teleportTo(currentPos.getX(), livingEntity.level().getMaxBuildHeight() + VoidTotem.PLATFORM.teleportHeightOffset(), currentPos.getZ());
             if (livingEntity instanceof ServerPlayer player) {
                 ((ServerGamePacketListenerImplAccessor) player.connection).setAboveGroundTickCount(0);
             }
         }
     }
 
-    public static BlockPos teleportToPositionNearby(LivingEntity livingEntity, BlockPos lastPos) {
+    public static BlockPos getNearLastPos(LivingEntity livingEntity) {
+        var lastPos = BlockPos.of(((ILivingEntityMixin) livingEntity).getLastSaveBlockPosAsLong());
         BlockPos teleportPos = null;
-        for (int i = 0; i < 16; i++) {
+        var level = livingEntity.level();
+        var lastSaveBlockDim = ((ILivingEntityMixin) livingEntity).getLastSaveBlockDim();
+        if(lastSaveBlockDim != null && lastSaveBlockDim == level.dimensionType()) {
+            for (int i = 0; i < 16; i++) {
+                var x = lastPos.getX() + (livingEntity.getRandom().nextDouble() - 0.5D) * 16.0D;
+                var y = Mth.clamp(lastPos.getY() + (double) (livingEntity.getRandom().nextInt(16) - 8), level.getMinBuildHeight(), level.getMaxBuildHeight() - 1);
+                var z = lastPos.getZ() + (livingEntity.getRandom().nextDouble() - 0.5D) * 16.0D;
 
-            var world = livingEntity.level;
-            var x = lastPos.getX() + (livingEntity.getRandom().nextDouble() - 0.5D) * 16.0D;
-            var y = Mth.clamp(lastPos.getY() + (double) (livingEntity.getRandom().nextInt(16) - 8), world.getMinBuildHeight(), world.getMaxBuildHeight() - 1);
-            var z = lastPos.getZ() + (livingEntity.getRandom().nextDouble() - 0.5D) * 16.0D;
-
-            var pos = new BlockPos((int) x, (int) y, (int) z);
-            if (livingEntity.randomTeleport(x, y, z, true)) {
-                teleportPos = pos;
-                break;
+                var pos = new BlockPos((int) x, (int) y, (int) z);
+                if (livingEntity.randomTeleport(x, y, z, false)) {
+                    teleportPos = pos;
+                    break;
+                }
             }
         }
         return teleportPos;
@@ -174,13 +175,23 @@ public class ModUtils {
         }
     }
 
+    public static void addTotemEffects(LivingEntity livingEntity) {
+        if (VoidTotem.PLATFORM.giveTotemEffects()) {
+            livingEntity.removeAllEffects();
+            livingEntity.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 900, 1));
+            livingEntity.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 100, 1));
+            livingEntity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 100, 1));
+        }
+    }
+
     public static void setLastSaveBlockPos(LivingEntity livingEntity) {
-        var world = livingEntity.level;
+        var level = livingEntity.level();
         var currentPos = livingEntity.blockPosition();
         var lastPos = BlockPos.of(((ILivingEntityMixin) livingEntity).getLastSaveBlockPosAsLong());
-        if (isSaveBlockPos(world, currentPos.below())) {
-            if (!lastPos.equals(currentPos) || !isSaveBlockPos(world, lastPos.below())) {
+        if (isSaveBlockPos(level, currentPos.below())) {
+            if (!lastPos.equals(currentPos) || !isSaveBlockPos(level, lastPos.below())) {
                 ((ILivingEntityMixin) livingEntity).setLastSaveBlockPosAsLong(currentPos.asLong());
+                ((ILivingEntityMixin) livingEntity).setLastSaveBlockDim(livingEntity.level().dimensionType());
             }
         }
     }
@@ -201,7 +212,7 @@ public class ModUtils {
             }
 
             var isInWater = livingEntity.isInWater();
-            var isInCobweb = livingEntity.level.getBlockState(livingEntity.blockPosition()).getBlock().equals(Blocks.COBWEB);
+            var isInCobweb = livingEntity.level().getBlockState(livingEntity.blockPosition()).getBlock().equals(Blocks.COBWEB);
 
             if (canPlayerFly || isInCobweb || isInWater) {
                 ((ILivingEntityMixin) livingEntity).setFallDamageImmune(false);

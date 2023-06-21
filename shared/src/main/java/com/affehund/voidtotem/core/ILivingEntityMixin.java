@@ -1,5 +1,7 @@
 package com.affehund.voidtotem.core;
 
+import net.minecraft.world.level.dimension.DimensionType;
+
 public interface ILivingEntityMixin {
 
     boolean isFallDamageImmune();
@@ -9,5 +11,9 @@ public interface ILivingEntityMixin {
     long getLastSaveBlockPosAsLong();
 
     void setLastSaveBlockPosAsLong(long pos);
+
+    DimensionType getLastSaveBlockDim();
+
+    void setLastSaveBlockDim(DimensionType dimensionType);
 }
 
