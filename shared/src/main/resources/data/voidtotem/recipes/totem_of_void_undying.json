@@ -22,5 +22,6 @@
   ],
   "result": {
     "item": "voidtotem:totem_of_void_undying"
-  }
+  },
+  "show_notification": true
 }

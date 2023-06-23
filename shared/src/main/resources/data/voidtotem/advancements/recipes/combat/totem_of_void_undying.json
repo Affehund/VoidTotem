@@ -30,5 +30,6 @@
     "recipes": [
       "voidtotem:totem_of_void_undying"
     ]
-  }
+  },
+  "sends_telemetry_event": false
 }

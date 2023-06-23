@@ -14,15 +14,10 @@ import net.minecraftforge.common.loot.LootModifier;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 
-public class EndCityTreasureModifier extends LootModifier {
+public class EndCityTreasureAddition extends LootModifier {
     private final Item addition;
 
-    /**
-     * Constructs a LootModifier.
-     *
-     * @param conditionsIn the ILootConditions that need to be matched before the loot is modified.
-     */
-    protected EndCityTreasureModifier(LootItemCondition[] conditionsIn, Item addition) {
+    protected EndCityTreasureAddition(LootItemCondition[] conditionsIn, Item addition) {
         super(conditionsIn);
         this.addition = addition;
     }
@@ -40,8 +35,8 @@ public class EndCityTreasureModifier extends LootModifier {
         return CODEC.get();
     }
 
-    public static final Supplier<Codec<EndCityTreasureModifier>> CODEC = Suppliers.memoize(() -> RecordCodecBuilder.create(inst -> codecStart(inst)
-            .and(ForgeRegistries.ITEMS.getCodec().fieldOf("item").forGetter(m -> m.addition))
-            .apply(inst, EndCityTreasureModifier::new)
+    public static final Supplier<Codec<EndCityTreasureAddition>> CODEC = Suppliers.memoize(() -> RecordCodecBuilder.create(inst -> codecStart(inst)
+            .and(ForgeRegistries.ITEMS.getCodec().fieldOf("addition").forGetter(m -> m.addition))
+            .apply(inst, EndCityTreasureAddition::new)
     ));
 }

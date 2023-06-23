@@ -22,13 +22,12 @@ import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraftforge.client.model.generators.ItemModelProvider;
-import net.minecraftforge.common.data.BlockTagsProvider;
-import net.minecraftforge.common.data.ExistingFileHelper;
-import net.minecraftforge.common.data.ForgeAdvancementProvider;
-import net.minecraftforge.common.data.LanguageProvider;
+import net.minecraftforge.common.data.*;
+import net.minecraftforge.common.loot.LootTableIdCondition;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.codehaus.plexus.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -141,6 +140,24 @@ public class VoidTotemDataGeneration {
 
         @Override
         protected void addTags(HolderLookup.@NotNull Provider p_256380_) {
+        }
+    }
+
+    public static class LootModifierGen extends GlobalLootModifierProvider {
+
+        public LootModifierGen(PackOutput output) {
+            super(output, ModConstants.MOD_ID);
+        }
+
+        @Override
+        protected void start() {
+            this.add("end_city_treasure_addition", new EndCityTreasureAddition(
+                    new LootItemCondition[]{
+                            LootItemRandomChanceCondition.randomChance(0.3f).build(),
+                            LootTableIdCondition.builder(new ResourceLocation("chests/end_city_treasure")).build()
+                    },
+                    VoidTotemForge.VOID_TOTEM_ITEM.get()
+            ));
         }
     }
 

@@ -80,7 +80,7 @@ public class VoidTotemForge {
             PARTICLE_TYPES.register("void_totem", () -> new SimpleParticleType(true));
 
     private static final DeferredRegister<Codec<? extends IGlobalLootModifier>> GLOBAL_LOOT_MODIFIERS = DeferredRegister.create(ForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, ModConstants.MOD_ID);
-    public static final RegistryObject<Codec<EndCityTreasureModifier>> END_CITY_TREASURE_LOOT = GLOBAL_LOOT_MODIFIERS.register("end_city_treasure_loot_modifier", EndCityTreasureModifier.CODEC);
+    public static final RegistryObject<Codec<EndCityTreasureAddition>> END_CITY_TREASURE_ADDITION = GLOBAL_LOOT_MODIFIERS.register("end_city_treasure_addition", EndCityTreasureAddition.CODEC);
 
 
     private void attachCaps(AttachCapabilitiesEvent<ItemStack> event) {
@@ -133,10 +133,13 @@ public class VoidTotemForge {
         var blockTagsGen = new VoidTotemDataGeneration.BlockTagsGen(packOutput, lookup, existingFileHelper);
 
         //  Server Side generators
-        generator.addProvider(isServerProvider, new VoidTotemDataGeneration.ItemTagsGen(packOutput, lookup, blockTagsGen, existingFileHelper));
         generator.addProvider(isServerProvider, new ForgeAdvancementProvider(packOutput, lookup, existingFileHelper, List.of(new VoidTotemDataGeneration.AdvancementGen())));
         generator.addProvider(isServerProvider, new LootTableProvider(packOutput, Collections.emptySet(),
                 List.of(new LootTableProvider.SubProviderEntry(VoidTotemDataGeneration.LootTableGen::new, LootContextParamSets.CHEST))));
+
+        generator.addProvider(event.includeServer(), blockTagsGen);
+        generator.addProvider(isServerProvider, new VoidTotemDataGeneration.ItemTagsGen(packOutput, lookup, blockTagsGen, existingFileHelper));
+        generator.addProvider(isServerProvider, new VoidTotemDataGeneration.LootModifierGen(packOutput));
         generator.addProvider(isServerProvider, new VoidTotemDataGeneration.RecipeGen(packOutput));
 
         //  Client Side generators

@@ -31,5 +31,6 @@
     [
       "used_void_totem"
     ]
-  ]
+  ],
+  "sends_telemetry_event": true
 }

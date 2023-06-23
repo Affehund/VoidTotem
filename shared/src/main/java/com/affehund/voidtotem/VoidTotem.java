@@ -17,10 +17,9 @@ public class VoidTotem {
     public static final PlatformHelper PLATFORM = loadPlatform();
 
     private static <T> T loadPlatform() {
-        var loadedService = ServiceLoader.load((Class<T>) PlatformHelper.class)
+        return ServiceLoader.load((Class<T>) PlatformHelper.class)
                 .findFirst()
                 .orElseThrow(() -> new NullPointerException("Failed to load service for " + PlatformHelper.class.getName()));
-        return loadedService;
     }
 
     public static void init() {

@@ -1,0 +1,14 @@
+{
+  "type": "voidtotem:end_city_treasure_addition",
+  "addition": "voidtotem:totem_of_void_undying",
+  "conditions": [
+    {
+      "chance": 0.3,
+      "condition": "minecraft:random_chance"
+    },
+    {
+      "condition": "forge:loot_table_id",
+      "loot_table_id": "minecraft:chests/end_city_treasure"
+    }
+  ]
+}

@@ -17,5 +17,6 @@
       ],
       "rolls": 1.0
     }
-  ]
+  ],
+  "random_sequence": "voidtotem:inject/chests/end_city_treasure"
 }
