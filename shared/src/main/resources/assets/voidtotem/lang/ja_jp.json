@@ -1,0 +1,16 @@
+{
+    "advancements.voidtotem.adventure.totem_of_void_undying.description": "虚無のトーテムを使い、奈落から生還する",
+    "advancements.voidtotem.adventure.totem_of_void_undying.title": "もう一度死を超えて",
+    "item.voidtotem.totem_of_void_undying": "虚無のトーテム",
+    "text.autoconfig.voidtotem.option.ADD_END_CITY_TREASURE": "エンドシティの宝箱に追加する",
+    "text.autoconfig.voidtotem.option.BLACKLISTED_DIMENSIONS": "ディメンションのブラックリスト",
+    "text.autoconfig.voidtotem.option.DISPLAY_TOTEM_ON_CHEST": "胴体にトーテムを表示する",
+    "text.autoconfig.voidtotem.option.GIVE_TOTEM_EFFECTS": "トーテムの効果を付与する",
+    "text.autoconfig.voidtotem.option.IS_INVERTED_BLACKLIST": "ブラックリストの反転",
+    "text.autoconfig.voidtotem.option.NEEDS_TOTEM": "トーテムを必要とする",
+    "text.autoconfig.voidtotem.option.SHOW_TOTEM_TOOLTIP": "ツールチップを表示",
+    "text.autoconfig.voidtotem.option.TELEPORT_HEIGHT_OFFSET": "テレポート先の標高",
+    "text.autoconfig.voidtotem.option.USE_TOTEM_FROM_INVENTORY": "インベントリから使用",
+    "tooltip.voidtotem.totem_of_void_undying": "手に持っていると奈落の底に落下するのを防ぐ",
+    "trinkets.slot.charm.charm": "チャーム"
+}
