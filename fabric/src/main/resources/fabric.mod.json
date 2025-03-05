@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${version}",
+  "name": "${mod_name}",
+  "description": "${description}",
+  "authors": [
+    "${mod_author}"
+  ],
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/voidtotem-fabric",
+    "issues": "https://github.com/Affehund/VoidTotem/issues",
+    "sources": "https://github.com/Affehund/VoidTotem"
+  },
+  "license": "${license}",
+  "icon": "logo.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.affehund.voidtotem.VoidTotemFabric"
+    ],
+    "client": [
+      "com.affehund.voidtotem.VoidTotemFabricClient"
+    ],
+    "modmenu": [
+      "com.affehund.voidtotem.integration.VoidTotemModMenuIntegration"
+    ]
+  },
+  "mixins": [
+    "${mod_id}.mixins.json",
+    "${mod_id}.fabric.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${fabric_loader_version}",
+    "fabric-api": "*",
+    "minecraft": "${minecraft_version}",
+    "java": ">=${java_version}",
+    "cloth-config": ">=15.0.127"
+  }
+}
+  

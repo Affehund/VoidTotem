@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "c": {
+      "item": "minecraft:chorus_fruit"
+    },
+    "e": {
+      "item": "minecraft:ender_eye"
+    },
+    "l": {
+      "item": "minecraft:lapis_lazuli"
+    },
+    "t": {
+      "item": "minecraft:totem_of_undying"
+    }
+  },
+  "pattern": [
+    "cec",
+    "ltl",
+    " e "
+  ],
+  "result": {
+    "id": "voidtotem:totem_of_void_undying",
+    "count": 1
+  },
+  "show_notification": true
+}

@@ -1,0 +1,22 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        " #",
+        "BL"
+    ],
+    "key": {
+        "#": {
+            "item": "minecraft:lapis_lazuli"
+        },
+        "B": {
+            "item": "minecraft:birch_planks"
+        },
+        "L": {
+            "item": "minecraft:lapis_block"
+        }
+    },
+    "result": {
+        "id": "minecraft:redstone_block",
+        "count": 1
+    }
+}

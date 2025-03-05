@@ -1,0 +1,8 @@
+{
+  "_comment": "Translation (fr_fr) by LotuxPunk",
+  "advancements.voidtotem.adventure.totem_of_void_undying.description": "Utilisez un Totem d'immortalité du Néant pour éviter la mort lors d'une chute dans le néant.",
+  "advancements.voidtotem.adventure.totem_of_void_undying.title": "Post-mortem 2",
+  "item.voidtotem.totem_of_void_undying": "Totem d'immortalité du Néant",
+  "tooltip.voidtotem.totem_of_void_undying": "Mettez ce totem dans votre main principale ou secondaire pour éviter de mourir si vous tombez dans le vide.",
+  "trinkets.slot.charm.charm": "Charm"
+}
