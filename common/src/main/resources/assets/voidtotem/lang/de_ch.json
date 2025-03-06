@@ -1,0 +1,13 @@
+{
+  "_comment": "Translation (de_de) by Affehund",
+  "modmenu.descriptionTranslation.voidtotem": "Ein Totem, das dich vor dem Tod in der Leere bewahrt.",
+  "advancements.voidtotem.adventure.totem_of_void_undying.description": "Benutze ein Totem der Unsterblichkeit in der Leere, um dem Tod, wenn du in die Leere fällst, von der Schippe zu springen",
+  "advancements.voidtotem.adventure.totem_of_void_undying.title": "Post mortem 2",
+  "item.voidtotem.totem_of_void_undying": "Totem der Unsterblichkeit in der Leere",
+  "tooltip.voidtotem.totem_of_void_undying": "Lege es in deine Haupt-/Nebenhand, um zu verhindern zu sterben, wenn du in die Leere fällst.",
+  "text.autoconfig.voidtotem.option.BLOCKLISTED_DIMENSIONS": "Blockierte Dimensionen",
+  "text.autoconfig.voidtotem.option.IS_INVERTED_BLOCKLIST": "Invertierte Blockliste",
+  "text.autoconfig.voidtotem.option.TELEPORT_HEIGHT_OFFSET": "Teleport-Höhenversatz",
+  "text.autoconfig.voidtotem.option.USE_TOTEM_FROM_INVENTORY": "Totem aus Inventar verwenden",
+  "trinkets.slot.charm.charm": "Amulett"
+}
