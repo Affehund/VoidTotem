@@ -1,8 +1,17 @@
 {
-  "_comment": "Translation (ru_ru) by BardinTheDwarf",
+  "_comment": "Translation (ru_ru) by serge-create & BardinTheDwarf",
   "advancements.voidtotem.adventure.totem_of_void_undying.description": "Воспользуйтесь тотемом пустоты, чтобы обмануть смерть и избежать падения в пустоту",
   "advancements.voidtotem.adventure.totem_of_void_undying.title": "Право на жизнь",
   "item.voidtotem.totem_of_void_undying": "Тотем пустоты",
+  "text.autoconfig.voidtotem.option.ADD_END_CITY_TREASURE": "Добавить сокровище в город края",
+  "text.autoconfig.voidtotem.option.BLACKLISTED_DIMENSIONS": "измерения в черном списке",
+  "text.autoconfig.voidtotem.option.DISPLAY_TOTEM_ON_CHEST": "Показывать тотем на груди",
+  "text.autoconfig.voidtotem.option.GIVE_TOTEM_EFFECTS": "Дать эффект тотема",
+  "text.autoconfig.voidtotem.option.IS_INVERTED_BLACKLIST": "Инвертирован ли черный список",
+  "text.autoconfig.voidtotem.option.NEEDS_TOTEM": "Требует тотем",
+  "text.autoconfig.voidtotem.option.SHOW_TOTEM_TOOLTIP": "Показать подсказку тотема",
+  "text.autoconfig.voidtotem.option.TELEPORT_HEIGHT_OFFSET": "Смещение высоты телепортации",
+  "text.autoconfig.voidtotem.option.USE_TOTEM_FROM_INVENTORY": "Использовать тотем из инвентаря",
   "tooltip.voidtotem.totem_of_void_undying": "Возьмите тотем в любую руку, чтобы предотвратить смерть от падения в пустоту",
   "trinkets.slot.charm.charm": "Charm"
 }
