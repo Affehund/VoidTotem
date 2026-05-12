@@ -34,9 +34,9 @@ public class ModUtils {
     }
 
     public static boolean canProtectFromVoid(LivingEntity entity, DamageSource source) {
-        String currentDim = entity.level().dimension().location().toString();
+        String currentDim = entity.level().dimension().identifier().toString();
         boolean isBlocklisted = Services.PLATFORM.isInvertedBlocklist() != Services.PLATFORM.getBlocklistedDimensions().contains(currentDim);
-        boolean isInVoid = source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && entity.getY() < entity.level().getMinBuildHeight();
+        boolean isInVoid = source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && entity.getY() < entity.level().getMinY();
         boolean isAwaitingPosition = entity instanceof ServerPlayer player && ((ServerGamePacketListenerImplAccessor) player.connection).getAwaitingPositionFromClient() != null;
 
         return !isBlocklisted && isInVoid && !isAwaitingPosition && hasVoidTotem(entity);
@@ -164,7 +164,7 @@ public class ModUtils {
 
     private static ItemStack getTotemFromInventory(LivingEntity entity) {
         if (Services.PLATFORM.useTotemFromInventory() && entity instanceof ServerPlayer player) {
-            return player.getInventory().items.stream()
+            return player.getInventory().getNonEquipmentItems().stream()
                     .filter(ModUtils::isVoidTotemItem)
                     .findFirst()
                     .orElse(null);
@@ -200,7 +200,7 @@ public class ModUtils {
             entity.teleportTo(lastPos.getX(), lastPos.getY(), lastPos.getZ());
         } else {
             BlockPos currentPos = entity.blockPosition();
-            entity.teleportTo(currentPos.getX(), entity.level().getMaxBuildHeight() + Services.PLATFORM.teleportHeightOffset(), currentPos.getZ());
+            entity.teleportTo(currentPos.getX(), entity.level().getMaxY() + Services.PLATFORM.teleportHeightOffset(), currentPos.getZ());
             if (entity instanceof ServerPlayer player) {
                 resetAboveGroundTickCount(player);
             }
@@ -215,7 +215,7 @@ public class ModUtils {
             return IntStream.range(0, 16)
                     .mapToObj(i -> {
                         double x = lastPos.getX() + (entity.getRandom().nextDouble() - 0.5) * 16.0;
-                        double y = Mth.clamp(lastPos.getY() + entity.getRandom().nextInt(16) - 8, level.getMinBuildHeight(), level.getMaxBuildHeight() - 1);
+                        double y = Mth.clamp(lastPos.getY() + entity.getRandom().nextInt(16) - 8, level.getMinY(), level.getMaxY() - 1);
                         double z = lastPos.getZ() + (entity.getRandom().nextDouble() - 0.5) * 16.0;
                         return new BlockPos((int) x, (int) y, (int) z);
                     })

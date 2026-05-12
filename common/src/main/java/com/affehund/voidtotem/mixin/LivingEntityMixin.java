@@ -62,8 +62,8 @@ public class LivingEntityMixin implements ILivingEntityMixin {
 
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
     public void readCustomDataFromNbt(@NotNull CompoundTag tag, CallbackInfo ci) {
-        this.voidtotem$isFallDamageImmune = tag.getBoolean(ModConstants.IS_FALL_DAMAGE_IMMUNE);
-        this.voidtotem$lastSaveBlockPos = tag.getLong(ModConstants.LAST_SAVE_BLOCK_POS);
+        this.voidtotem$isFallDamageImmune = tag.getBooleanOr(ModConstants.IS_FALL_DAMAGE_IMMUNE, false);
+        this.voidtotem$lastSaveBlockPos = tag.getLongOr(ModConstants.LAST_SAVE_BLOCK_POS, 0L);
     }
 
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))

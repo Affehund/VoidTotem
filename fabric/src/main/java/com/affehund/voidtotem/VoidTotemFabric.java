@@ -12,7 +12,7 @@ import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.minecraft.core.Registry;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootPool;
@@ -30,8 +30,8 @@ public class VoidTotemFabric implements ModInitializer {
     public void onInitialize() {
         PayloadTypeRegistry.playS2C().register(TotemEffectPacket.TYPE, TotemEffectPacket.STREAM_CODEC);
 
-        Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(ModConstants.MOD_ID, ModConstants.ITEM_VOID_TOTEM), VOID_TOTEM_ITEM);
-        Registry.register(BuiltInRegistries.PARTICLE_TYPE, ResourceLocation.fromNamespaceAndPath(ModConstants.MOD_ID, "void_totem"), VOID_TOTEM_PARTICLE);
+        Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(ModConstants.MOD_ID, ModConstants.ITEM_VOID_TOTEM), VOID_TOTEM_ITEM);
+        Registry.register(BuiltInRegistries.PARTICLE_TYPE, Identifier.fromNamespaceAndPath(ModConstants.MOD_ID, "void_totem"), VOID_TOTEM_PARTICLE);
         ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.COMBAT).register(entries -> entries.addAfter(new ItemStack(Items.TOTEM_OF_UNDYING), VOID_TOTEM_ITEM));
 
         AutoConfig.register(VoidTotemAutoConfig.class, Toml4jConfigSerializer::new);

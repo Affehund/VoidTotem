@@ -6,6 +6,7 @@ import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.SimpleAnimatedParticle;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.util.RandomSource;
 import org.jetbrains.annotations.NotNull;
 
 public class VoidTotemParticle extends SimpleAnimatedParticle {
@@ -36,7 +37,7 @@ public class VoidTotemParticle extends SimpleAnimatedParticle {
             this.sprites = sprites;
         }
 
-        public Particle createParticle(@NotNull SimpleParticleType type, @NotNull ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
+        public Particle createParticle(@NotNull SimpleParticleType type, @NotNull ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, @NotNull RandomSource randomSource) {
             return new VoidTotemParticle(level, x, y, z, xSpeed, ySpeed, zSpeed, this.sprites);
         }
     }
